@@ -1,941 +1,859 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>House 22</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* Custom Scrollbar for a sleek look */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
-
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
-        }
-
-        /* Float animation for modals */
-        @keyframes modalEnter {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .modal-animate { animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House 22</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,.05); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 10px; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    height: 100dvh;
+  }
+  .glass-panel {
+    background: rgba(255,255,255,.03);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.05);
+    box-shadow: 0 4px 30px rgba(0,0,0,.1);
+  }
+  .nav-item.active {
+    background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+    color: #fff; box-shadow: 0 4px 15px rgba(236,72,153,.3);
+  }
+  @keyframes modalEnter { from { opacity:0; transform: scale(.95) translateY(10px);} to { opacity:1; transform: scale(1) translateY(0);} }
+  .modal-animate { animation: modalEnter .3s cubic-bezier(.16,1,.3,1) forwards; }
+  .admin-only { display: none; }
+  body.is-admin .admin-only { display: revert; }
+  .modal { display: none; }
+  .modal.open { display: flex; }
+  select option { background: #1e1b4b; color: #fff; }
+  input[type=number]::-webkit-inner-spin-button { opacity: .3; }
+</style>
 </head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden selection:bg-pink-500 selection:text-white">
+<body class="flex flex-col md:flex-row overflow-hidden selection:bg-pink-500 selection:text-white">
 
-    <!-- Sidebar (Desktop) / Hidden on Mobile -->
-    <aside class="hidden md:flex flex-col w-64 h-full glass-panel border-r border-white/10 z-20">
-        <div class="p-6 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-lg shadow-lg">
-                H22
-            </div>
-            <h1 class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">
-                House 22
-            </h1>
-        </div>
-        
-        <div class="px-6 pb-4">
-            <div id="realtime-clock-desktop" class="text-xs font-medium text-indigo-300/70 bg-white/5 rounded-lg p-2 text-center border border-white/5">
-                --:--:--
-            </div>
-        </div>
-
-        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
-            <button onclick="switchTab('quychung')" id="tab-quychung-desktop" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                <i class="fas fa-wallet w-5"></i> <span class="font-medium">Quỹ Chung</span>
-            </button>
-            <button onclick="switchTab('canhan')" id="tab-canhan-desktop" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                <i class="fas fa-user-circle w-5"></i> <span class="font-medium">Cá Nhân</span>
-            </button>
-            <button onclick="switchTab('congno')" id="tab-congno-desktop" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                <i class="fas fa-hand-holding-usd w-5"></i> <span class="font-medium">Công Nợ</span>
-            </button>
-            <button onclick="switchTab('lichsu')" id="tab-lichsu-desktop" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                <i class="fas fa-history w-5"></i> <span class="font-medium">Lịch Sử</span>
-            </button>
-            <button onclick="switchTab('caidat')" id="tab-caidat-desktop" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                <i class="fas fa-cog w-5"></i> <span class="font-medium">Cài Đặt</span>
-            </button>
-            <button onclick="switchTab('loau')" id="tab-loau-desktop" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
-                <i class="fas fa-shield-alt w-5"></i> <span class="font-medium">LoAu</span>
-            </button>
-        </nav>
-        
-        <div class="p-4 mt-auto">
-            <div class="glass-panel p-4 rounded-2xl flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                    <i class="fas fa-user text-xs text-gray-300" id="user-avatar-icon"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-white truncate" id="current-user-role-desktop">Khách (Chỉ xem)</p>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 relative h-full overflow-y-auto pb-24 md:pb-0">
-        <!-- Mobile Header -->
-        <header class="md:hidden glass-panel sticky top-0 z-20 px-5 py-4 border-b border-white/10 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg">
-                    H22
-                </div>
-                <h1 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">House 22</h1>
-            </div>
-            <div class="flex flex-col items-end">
-                <span id="current-user-role-mobile" class="text-xs font-semibold bg-white/10 px-2 py-1 rounded-md text-pink-300">Khách</span>
-                <span id="realtime-clock-mobile" class="text-[10px] text-gray-400 mt-1">--:--</span>
-            </div>
-        </header>
-
-        <div class="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
-            
-            <!-- TAB: QUỸ CHUNG -->
-            <section id="sec-quychung" class="tab-content space-y-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">Quỹ Sinh Hoạt Chung</h2>
-                        <p class="text-gray-400 text-sm mt-1">Tổng hợp và chia sẻ chi phí gia đình</p>
-                    </div>
-                    <!-- Nút Scan Bill to bự nổi bật -->
-                    <button onclick="openScanModal()" class="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-pink-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fas fa-camera text-xl"></i> 
-                        <span>Thêm / Quét Bill</span>
-                    </button>
-                </div>
-
-                <!-- Bảng tổng hợp -->
-                <div class="glass-panel rounded-[2rem] overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-indigo-300 uppercase bg-white/5 border-b border-white/10">
-                                <tr>
-                                    <th class="px-6 py-4 font-semibold whitespace-nowrap">Các Mục</th>
-                                    <th class="px-6 py-4 font-semibold whitespace-nowrap text-right">Tổng (VNĐ)</th>
-                                    <!-- Cột thành viên render bằng JS -->
-                                    <th id="th-members-container" class="px-6 py-4"></th>
-                                    <th class="px-6 py-4 font-semibold text-center admin-only hidden">Tool</th>
-                                </tr>
-                            </thead>
-                            <tbody id="quy-chung-table-body" class="divide-y divide-white/5">
-                                <!-- Dữ liệu render từ JS -->
-                            </tbody>
-                            <tfoot class="bg-indigo-900/30 border-t border-indigo-500/30 font-bold text-white">
-                                <!-- Hàng Tổng -->
-                                <tr id="quy-chung-tfoot-tong"></tr>
-                                <!-- Hàng Đã Chi -->
-                                <tr id="quy-chung-tfoot-dachi" class="text-pink-300 bg-black/20"></tr>
-                                <!-- Hàng Cần Thu (Thực tế nợ) -->
-                                <tr id="quy-chung-tfoot-canthu" class="text-emerald-300 bg-black/40"></tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB: CÁ NHÂN -->
-            <section id="sec-canhan" class="tab-content hidden space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-white">Sổ Cá Nhân</h2>
-                    <button onclick="addMember()" class="admin-only hidden bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-white/10">
-                        <i class="fas fa-plus mr-1"></i> Thêm Member
-                    </button>
-                </div>
-                
-                <div id="members-cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <!-- Render từ JS -->
-                </div>
-            </section>
-
-            <!-- TAB: CÔNG NỢ -->
-            <section id="sec-congno" class="tab-content hidden space-y-6">
-                <h2 class="text-2xl font-bold text-white">Chốt Công Nợ</h2>
-                <div class="glass-panel rounded-[2rem] p-6 sm:p-10 text-center border-dashed border-2 border-white/20">
-                    <div class="w-20 h-20 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check-circle text-4xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-2">Chưa đến kỳ chốt</h3>
-                    <p class="text-gray-400">Các số liệu đang được tính toán theo thời gian thực ở Quỹ Chung. Admin có thể chốt sổ vào cuối tháng.</p>
-                </div>
-            </section>
-
-            <!-- TAB: LỊCH SỬ -->
-            <section id="sec-lichsu" class="tab-content hidden space-y-6">
-                <h2 class="text-2xl font-bold text-white">Lịch Sử Hoạt Động</h2>
-                <div class="glass-panel rounded-[2rem] p-4">
-                    <div id="history-list" class="space-y-4">
-                        <!-- Render từ JS -->
-                        <p class="text-gray-500 text-center py-4 text-sm">Chưa có dữ liệu scan bill nào</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB: CÀI ĐẶT -->
-            <section id="sec-caidat" class="tab-content hidden space-y-6">
-                <h2 class="text-2xl font-bold text-white">Cài Đặt Hệ Thống</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Khối Cài đặt chung -->
-                    <div class="glass-panel rounded-[2rem] p-6 space-y-4">
-                        <h3 class="font-semibold text-indigo-300 mb-4 border-b border-white/10 pb-2">Giao diện & Thông báo</h3>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-300">Chế độ nền tối</span>
-                            <div class="w-12 h-6 bg-indigo-500 rounded-full relative cursor-pointer">
-                                <div class="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-300">Thông báo đẩy</span>
-                            <div class="w-12 h-6 bg-white/20 rounded-full relative cursor-pointer">
-                                <div class="w-4 h-4 bg-gray-400 rounded-full absolute top-1 left-1"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Khối Đồng Bộ (Được bảo vệ bởi Admin) -->
-                    <div class="glass-panel rounded-[2rem] p-6 relative overflow-hidden flex flex-col h-full">
-                        <h3 class="font-semibold text-pink-300 mb-4 border-b border-white/10 pb-2">Đồng Bộ Hóa Đám Mây</h3>
-                        
-                        <!-- Lớp phủ khóa nếu không phải Admin -->
-                        <div id="sync-lock-overlay" class="absolute inset-0 bg-gray-900/60 backdrop-blur-md z-10 flex flex-col items-center justify-center rounded-[2rem]">
-                            <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-3">
-                                <i class="fas fa-lock text-xl text-pink-400"></i>
-                            </div>
-                            <span class="text-white font-medium">Khu vực dành riêng cho Chủ nhà</span>
-                            <span class="text-xs text-gray-400 mt-1">Đăng nhập tài khoản Admin để cấu hình</span>
-                        </div>
-
-                        <div class="space-y-4 flex-1">
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">Mã đồng bộ (Sync Code)</label>
-                                <input type="text" id="sync-code-input" value="H22-SECURE-9981" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-white font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors" disabled>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">Link liên kết (Webhook/API)</label>
-                                <input type="text" id="sync-link-input" value="https://api.house22.app/v1/sync/9981" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-gray-300 text-sm focus:outline-none focus:border-indigo-500 transition-colors" disabled>
-                            </div>
-                            <div class="mt-auto pt-4">
-                                <button id="btn-save-sync" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm font-medium transition-colors" disabled>
-                                    Lưu Cấu Hình
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB: LOAU (Phân quyền Chủ Nhà) -->
-            <section id="sec-loau" class="tab-content hidden space-y-6">
-                <div class="max-w-md mx-auto">
-                    <div class="glass-panel rounded-[2rem] p-8 mt-10 relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-pink-500"></div>
-                        
-                        <div class="text-center mb-8">
-                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4 border border-white/10">
-                                <i class="fas fa-shield-alt text-2xl text-pink-400"></i>
-                            </div>
-                            <h2 class="text-2xl font-bold text-white mb-1">Cổng Chủ Nhà</h2>
-                            <p class="text-gray-400 text-sm">Chỉ Admin mới có quyền đăng nhập và chỉnh sửa số liệu hệ thống House 22.</p>
-                        </div>
-
-                        <div id="login-form" class="space-y-4">
-                            <div class="relative">
-                                <input type="text" id="login-username" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-pink-500 focus:bg-black/40 transition-all peer placeholder-transparent" placeholder="Username">
-                                <label class="absolute text-xs text-gray-400 top-2 left-4 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-2 peer-focus:text-xs peer-focus:text-pink-400">
-                                    Tên đăng nhập
-                                </label>
-                            </div>
-                            <div class="relative">
-                                <input type="password" id="login-password" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-pink-500 focus:bg-black/40 transition-all peer placeholder-transparent" placeholder="Password">
-                                <label class="absolute text-xs text-gray-400 top-2 left-4 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-2 peer-focus:text-xs peer-focus:text-pink-400">
-                                    Mật khẩu (Tùy chọn)
-                                </label>
-                            </div>
-                            <button onclick="handleLogin()" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold py-4 rounded-xl mt-4 shadow-lg shadow-pink-500/25 transition-all active:scale-95">
-                                Khởi động quyền Chủ Nhà
-                            </button>
-                        </div>
-
-                        <div id="logged-in-state" class="hidden text-center space-y-4">
-                            <div class="text-emerald-400 mb-2">
-                                <i class="fas fa-check-circle text-4xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white">Đã cấp quyền Chủ Nhà</h3>
-                            <p class="text-sm text-gray-400">Bạn hiện có toàn quyền: Thêm/Sửa/Xóa dữ liệu, cấu hình đồng bộ, và quản lý thành viên.</p>
-                            <button onclick="handleLogout()" class="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm transition-colors">
-                                Thoát chế độ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- Bottom Navigation (Mobile) -->
-    <nav class="md:hidden fixed bottom-4 left-4 right-4 glass-panel rounded-full z-50 flex justify-between px-2 py-2 shadow-2xl">
-        <button onclick="switchTab('quychung')" id="tab-quychung-mobile" class="nav-item active flex-1 flex flex-col items-center justify-center py-2 rounded-full text-gray-400 transition-all">
-            <i class="fas fa-wallet text-lg mb-1"></i> <span class="text-[10px] font-medium">Quỹ Chung</span>
-        </button>
-        <button onclick="switchTab('canhan')" id="tab-canhan-mobile" class="nav-item flex-1 flex flex-col items-center justify-center py-2 rounded-full text-gray-400 transition-all">
-            <i class="fas fa-user-circle text-lg mb-1"></i> <span class="text-[10px] font-medium">Cá Nhân</span>
-        </button>
-        <button onclick="switchTab('congno')" id="tab-congno-mobile" class="nav-item flex-1 flex flex-col items-center justify-center py-2 rounded-full text-gray-400 transition-all">
-            <i class="fas fa-hand-holding-usd text-lg mb-1"></i> <span class="text-[10px] font-medium">Công Nợ</span>
-        </button>
-        <button onclick="switchTab('loau')" id="tab-loau-mobile" class="nav-item flex-1 flex flex-col items-center justify-center py-2 rounded-full text-gray-400 transition-all relative">
-            <i class="fas fa-shield-alt text-lg mb-1"></i> <span class="text-[10px] font-medium">LoAu</span>
-            <!-- Chấm đỏ báo chưa đăng nhập -->
-            <span id="loau-dot" class="absolute top-2 right-4 w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>
-        </button>
-    </nav>
-
-    <!-- MODAL: SCAN BILL (Ẩn mặc định) -->
-    <div id="scan-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-md rounded-[2rem] p-6 relative modal-animate flex flex-col max-h-[90vh]">
-            <button onclick="closeScanModal()" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <h3 class="text-xl font-bold text-white mb-4">📸 Ghi nhận Chi Phí</h3>
-            
-            <div class="overflow-y-auto pr-2 custom-scrollbar flex-1 space-y-4">
-                <!-- Khu vực giả lập Scan -->
-                <label class="block w-full border-2 border-dashed border-indigo-500/50 hover:border-pink-500/50 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-black/20 group">
-                    <input type="file" class="hidden" id="file-upload" onchange="simulateScan()">
-                    <div id="scan-idle">
-                        <div class="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                            <i class="fas fa-cloud-upload-alt text-xl"></i>
-                        </div>
-                        <p class="text-sm text-gray-300">Chạm để chụp bill hoặc chọn ảnh</p>
-                    </div>
-                    <div id="scan-loading" class="hidden text-pink-400">
-                        <i class="fas fa-circle-notch fa-spin text-3xl mb-2"></i>
-                        <p class="text-sm">Hệ thống đang trích xuất dữ liệu...</p>
-                    </div>
-                </label>
-
-                <!-- Form dữ liệu -->
-                <div id="scan-form" class="space-y-4 opacity-50 pointer-events-none transition-opacity">
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Tên mục chi (VD: Siêu thị, Xem phim...)</label>
-                        <input type="text" id="bill-name" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Tổng tiền (VNĐ)</label>
-                        <input type="number" id="bill-amount" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs text-gray-400 mb-1">Phân loại</label>
-                            <select id="bill-category" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-indigo-500 appearance-none">
-                                <option value="Sinh hoạt">Sinh hoạt chung</option>
-                                <option value="Đi chơi">Đi ăn/chơi</option>
-                                <option value="Phát sinh">Phát sinh khác</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 mb-1">Người đã trả (Chi ra)</label>
-                            <select id="bill-payer" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-indigo-500 appearance-none">
-                                <!-- Render từ JS -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Split Logic -->
-                    <div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-3">
-                        <label class="block text-xs font-semibold text-indigo-300 mb-2">Ai sẽ share khoản này?</label>
-                        <select id="bill-split-type" onchange="toggleSplitCheckboxes()" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-sm text-white mb-2">
-                            <option value="all">Tất cả mọi người (Chia đều)</option>
-                            <option value="custom">Tùy chọn thành viên...</option>
-                        </select>
-                        
-                        <div id="split-checkboxes" class="hidden grid grid-cols-2 gap-2 mt-2">
-                            <!-- Checkbox render từ JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-4 mt-2 border-t border-white/10">
-                <button id="btn-save-bill" onclick="saveBill()" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-3 rounded-xl opacity-50 cursor-not-allowed transition-all">
-                    Lưu vào Sổ
-                </button>
-            </div>
-        </div>
+<!-- Sidebar (desktop) -->
+<aside class="hidden md:flex flex-col w-64 h-full glass-panel border-r border-white/10 z-20">
+  <div class="p-6 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-lg shadow-lg">H22</div>
+    <h1 class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">House 22</h1>
+  </div>
+  <div class="px-6 pb-4">
+    <div id="clock-desktop" class="text-xs font-medium text-indigo-300/70 bg-white/5 rounded-lg p-2 text-center border border-white/5">--</div>
+  </div>
+  <nav class="flex-1 px-4 space-y-2 overflow-y-auto" id="nav-desktop"></nav>
+  <div class="p-4 mt-auto">
+    <div class="glass-panel p-4 rounded-2xl flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i class="fas fa-user text-xs text-gray-300" id="user-avatar-icon"></i></div>
+      <p class="text-sm font-medium text-white truncate" id="role-desktop">Khách</p>
     </div>
+  </div>
+</aside>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-black/90 text-white px-6 py-3 rounded-full text-sm font-medium z-[100] transition-all transform -translate-y-20 opacity-0 border border-white/10 shadow-xl flex items-center gap-2">
-        <i class="fas fa-info-circle text-pink-400"></i>
-        <span id="toast-msg">Thông báo</span>
+<!-- Main -->
+<main class="flex-1 relative h-full overflow-y-auto pb-28 md:pb-0">
+  <header class="md:hidden glass-panel sticky top-0 z-20 px-5 py-3 border-b border-white/10 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-lg">H22</div>
+      <h1 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">House 22</h1>
     </div>
+    <div class="flex flex-col items-end">
+      <span id="role-mobile" class="text-xs font-semibold bg-white/10 px-2 py-1 rounded-md text-pink-300">Khách</span>
+      <span id="clock-mobile" class="text-[10px] text-gray-400 mt-1">--:--</span>
+    </div>
+  </header>
 
-    <!-- MAIN JAVASCRIPT LOGIC -->
-    <script>
-        // --- REALTIME CLOCK ---
-        function updateClock() {
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            const timeStr = now.toLocaleDateString('vi-VN', options);
-            document.getElementById('realtime-clock-desktop').innerText = timeStr;
-            // Mobile: shorter format
-            document.getElementById('realtime-clock-mobile').innerText = now.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+  <div class="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
 
-        // --- STATE QUẢN LÝ DỮ LIỆU ---
-        let isAdmin = false; // Trạng thái Chủ nhà
+    <!-- QUỸ CHUNG -->
+    <section id="sec-quychung" class="tab-content space-y-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-2xl font-bold">Quỹ Sinh Hoạt Chung</h2>
+          <p class="text-gray-400 text-sm mt-1">Tổng hợp và chia sẻ chi phí gia đình</p>
+        </div>
+        <div class="flex gap-2 w-full md:w-auto">
+          <button data-action="add-item" class="flex-1 md:flex-none bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-pink-500/25 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <i class="fas fa-plus text-lg"></i><span>Thêm khoản chi</span>
+          </button>
+        </div>
+      </div>
+      <div class="glass-panel rounded-[2rem] overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="text-xs text-indigo-300 uppercase bg-white/5 border-b border-white/10"><tr id="thead-row"></tr></thead>
+            <tbody id="tbody" class="divide-y divide-white/5"></tbody>
+            <tfoot id="tfoot" class="bg-indigo-900/30 border-t border-indigo-500/30 font-bold"></tfoot>
+          </table>
+        </div>
+      </div>
+      <p id="unpaid-note" class="hidden text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3"></p>
+    </section>
 
-        let appData = {
-            members: ["Nghĩa", "Hòa", "Trí"],
-            // Các khoản cố định mặc định từ ảnh
-            fixedItems: [
-                { id: 'item1', name: "Tiền thuê nhà", total: 8000000, split: { "Nghĩa": 7000000, "Hòa": 0, "Trí": 1000000 } },
-                { id: 'item2', name: "Tiền điện", total: 1118000, split: { "Nghĩa": 559000, "Hòa": 559000, "Trí": 0 } },
-                { id: 'item3', name: "Tiền internet", total: 195000, split: { "Nghĩa": 97500, "Hòa": 97500, "Trí": 0 } },
-                { id: 'item4', name: "Tiền ăn ở nhà", total: 4034000, split: { "Nghĩa": 2017000, "Hòa": 2017000, "Trí": 0 } }
-            ],
-            // Lưu các bill đã scan
-            bills: [],
-            // Tính toán số tiền mỗi người đã CHI RA trước
-            paid: { "Nghĩa": 3000000, "Hòa": 0, "Trí": 0 } // Dummy data cho sinh động
-        };
+    <!-- CÁ NHÂN -->
+    <section id="sec-canhan" class="tab-content hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold">Sổ Cá Nhân</h2>
+        <button data-action="add-member" class="admin-only bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-medium border border-white/10">
+          <i class="fas fa-plus mr-1"></i> Thêm thành viên
+        </button>
+      </div>
+      <div id="members-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+    </section>
 
-        // Hàm tiện ích format tiền tệ
-        const formatMoney = (amount) => new Intl.NumberFormat('vi-VN').format(Math.round(amount)) + ' đ';
+    <!-- CÔNG NỢ -->
+    <section id="sec-congno" class="tab-content hidden space-y-6">
+      <div class="flex justify-between items-center gap-3">
+        <h2 class="text-2xl font-bold">Chốt Công Nợ</h2>
+        <button data-action="close-period" class="admin-only bg-gradient-to-r from-indigo-500 to-pink-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg active:scale-95">
+          <i class="fas fa-lock mr-1"></i> Chốt sổ kỳ này
+        </button>
+      </div>
+      <div class="glass-panel rounded-[2rem] p-5 space-y-4">
+        <h3 class="font-semibold text-indigo-300">Ai chuyển cho ai</h3>
+        <div id="transfers" class="space-y-2"></div>
+      </div>
+      <div class="glass-panel rounded-[2rem] p-5 space-y-3">
+        <h3 class="font-semibold text-pink-300">Các kỳ đã chốt</h3>
+        <div id="periods" class="space-y-2"></div>
+      </div>
+    </section>
 
-        // Custom Notification (thay thế alert)
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            if(isError) toast.querySelector('i').className = "fas fa-exclamation-triangle text-red-500";
-            else toast.querySelector('i').className = "fas fa-check-circle text-emerald-400";
-            
-            toast.classList.remove('-translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('-translate-y-20', 'opacity-0');
-            }, 3000);
-        }
+    <!-- LỊCH SỬ -->
+    <section id="sec-lichsu" class="tab-content hidden space-y-6">
+      <h2 class="text-2xl font-bold">Lịch Sử Hoạt Động</h2>
+      <div class="glass-panel rounded-[2rem] p-4"><div id="history-list" class="space-y-3"></div></div>
+    </section>
 
-        // --- NAVIGATION LOGIC ---
-        function switchTab(tabId) {
-            // Hide all
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-gradient-to-r', 'text-white'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.add('text-gray-400'));
-            
-            // Show selected
-            document.getElementById('sec-' + tabId).classList.remove('hidden');
-            
-            // Highlight Desktop
-            const dBtn = document.getElementById('tab-' + tabId + '-desktop');
-            if(dBtn) {
-                dBtn.classList.remove('text-gray-400');
-                dBtn.classList.add('active');
-            }
-            
-            // Highlight Mobile
-            const mBtn = document.getElementById('tab-' + tabId + '-mobile');
-            if(mBtn) {
-                mBtn.classList.remove('text-gray-400');
-                mBtn.classList.add('active');
-            }
-        }
+    <!-- CÀI ĐẶT -->
+    <section id="sec-caidat" class="tab-content hidden space-y-6">
+      <h2 class="text-2xl font-bold">Cài Đặt Hệ Thống</h2>
+      <div class="glass-panel rounded-[2rem] p-6 relative overflow-hidden max-w-xl">
+        <h3 class="font-semibold text-pink-300 mb-4 border-b border-white/10 pb-2">Sao lưu & chuyển dữ liệu</h3>
+        <div id="settings-lock" class="absolute inset-0 bg-gray-900/60 backdrop-blur-md z-10 flex flex-col items-center justify-center rounded-[2rem]">
+          <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-3"><i class="fas fa-lock text-xl text-pink-400"></i></div>
+          <span class="font-medium">Khu vực dành riêng cho Chủ nhà</span>
+          <span class="text-xs text-gray-400 mt-1">Đăng nhập ở tab LoAu</span>
+        </div>
+        <p class="text-xs text-gray-400 mb-4">Dữ liệu được lưu ngay trên trình duyệt của thiết bị này. Muốn dùng trên máy khác: xuất file rồi nhập vào máy đó. Nên xuất sao lưu định kỳ.</p>
+        <div class="space-y-3">
+          <button data-action="export" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-sm font-medium"><i class="fas fa-download mr-2"></i>Xuất file sao lưu (.json)</button>
+          <label class="block w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-sm font-medium text-center cursor-pointer">
+            <i class="fas fa-upload mr-2"></i>Nhập từ file sao lưu
+            <input type="file" accept="application/json,.json" class="hidden" id="import-file">
+          </label>
+          <button data-action="reset-all" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-300 py-3 rounded-xl text-sm font-medium border border-red-500/20"><i class="fas fa-trash-alt mr-2"></i>Xóa toàn bộ dữ liệu</button>
+        </div>
+      </div>
+    </section>
 
-        // --- AUTH LOGIC (CHỦ NHÀ) ---
-        function handleLogin() {
-            const user = document.getElementById('login-username').value.trim().toLowerCase();
-            if(user === 'admin' || user === 'chunha') {
-                isAdmin = true;
-                
-                // Cập nhật UI đăng nhập
-                document.getElementById('login-form').classList.add('hidden');
-                document.getElementById('logged-in-state').classList.remove('hidden');
-                document.getElementById('loau-dot').classList.add('hidden');
-                
-                // Cập nhật avatar/role hiển thị
-                document.getElementById('current-user-role-desktop').innerText = 'Chủ Nhà (Admin)';
-                document.getElementById('current-user-role-desktop').classList.replace('text-white', 'text-pink-400');
-                document.getElementById('current-user-role-mobile').innerText = 'Admin';
-                document.getElementById('user-avatar-icon').className = "fas fa-crown text-xs text-pink-400";
-                
-                // Kích hoạt các quyền Admin trên toàn hệ thống
-                applyAdminRights();
-                showToast("Đã cấp quyền Chủ Nhà!");
-            } else {
-                showToast("Tên đăng nhập không hợp lệ. Chỉ Chủ nhà được phép!", true);
-            }
-        }
+    <!-- LOAU -->
+    <section id="sec-loau" class="tab-content hidden space-y-6">
+      <div class="max-w-md mx-auto">
+        <div class="glass-panel rounded-[2rem] p-8 mt-6 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-pink-500"></div>
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4 border border-white/10"><i class="fas fa-shield-alt text-2xl text-pink-400"></i></div>
+            <h2 class="text-2xl font-bold mb-1">Cổng Chủ Nhà</h2>
+            <p class="text-gray-400 text-sm">Chỉ Admin mới được sửa/xóa số liệu, quản lý thành viên và chốt sổ.</p>
+          </div>
+          <form id="login-form" class="space-y-4" autocomplete="off">
+            <input type="text" id="login-username" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500" placeholder="Tên đăng nhập (admin)">
+            <input type="password" id="login-password" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500" placeholder="Mật khẩu">
+            <p id="login-hint" class="text-xs text-amber-300/90 hidden">Lần đầu đăng nhập: mật khẩu bạn nhập (từ 4 ký tự) sẽ được đặt làm mật khẩu Chủ nhà.</p>
+            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-pink-500/25 active:scale-95">Khởi động quyền Chủ Nhà</button>
+          </form>
+          <div id="logged-in-state" class="hidden text-center space-y-4">
+            <div class="text-emerald-400"><i class="fas fa-check-circle text-4xl"></i></div>
+            <h3 class="text-xl font-bold">Đã cấp quyền Chủ Nhà</h3>
+            <p class="text-sm text-gray-400">Bạn có thể sửa/xóa khoản chi, quản lý thành viên, chốt sổ và sao lưu.</p>
+            <button data-action="logout" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm">Thoát chế độ</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
 
-        function handleLogout() {
-            isAdmin = false;
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-            
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('logged-in-state').classList.add('hidden');
-            document.getElementById('loau-dot').classList.remove('hidden');
-            
-            document.getElementById('current-user-role-desktop').innerText = 'Khách (Chỉ xem)';
-            document.getElementById('current-user-role-desktop').classList.replace('text-pink-400', 'text-white');
-            document.getElementById('current-user-role-mobile').innerText = 'Khách';
-            document.getElementById('user-avatar-icon').className = "fas fa-user text-xs text-gray-300";
-            
-            applyAdminRights();
-            showToast("Đã thoát chế độ Chủ nhà");
-        }
+<!-- Bottom nav (mobile) -->
+<nav id="nav-mobile" class="md:hidden fixed bottom-3 left-3 right-3 glass-panel rounded-full z-40 flex justify-between px-1.5 py-1.5 shadow-2xl"></nav>
 
-        function applyAdminRights() {
-            // Hiển thị/Ẩn các nút Tool (Sửa/Xóa/Thêm)
-            document.querySelectorAll('.admin-only').forEach(el => {
-                if(isAdmin) el.classList.remove('hidden');
-                else el.classList.add('hidden');
-            });
-            
-            // Xử lý khu vực Đồng bộ (Cài đặt)
-            const syncLock = document.getElementById('sync-lock-overlay');
-            const syncCode = document.getElementById('sync-code-input');
-            const syncLink = document.getElementById('sync-link-input');
-            const syncBtn = document.getElementById('btn-save-sync');
-            
-            if(isAdmin) {
-                syncLock.classList.add('hidden');
-                syncCode.disabled = false;
-                syncLink.disabled = false;
-                syncBtn.disabled = false;
-                syncBtn.classList.replace('bg-white/10', 'bg-gradient-to-r');
-                syncBtn.classList.add('from-indigo-600', 'to-pink-600');
-            } else {
-                syncLock.classList.remove('hidden');
-                syncCode.disabled = true;
-                syncLink.disabled = true;
-                syncBtn.disabled = true;
-                syncBtn.classList.replace('bg-gradient-to-r', 'bg-white/10');
-                syncBtn.classList.remove('from-indigo-600', 'to-pink-600');
-            }
+<!-- MODAL: khoản chi -->
+<div id="item-modal" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div class="glass-panel w-full max-w-md rounded-[2rem] p-6 relative modal-animate flex flex-col max-h-[92vh]">
+    <button data-action="close-modal" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20"><i class="fas fa-times"></i></button>
+    <h3 id="im-title" class="text-xl font-bold mb-4">Ghi nhận chi phí</h3>
+    <div class="overflow-y-auto pr-1 flex-1 space-y-4">
+      <div>
+        <label class="block text-xs text-gray-400 mb-1">Tên khoản chi</label>
+        <input id="im-name" maxlength="60" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500" placeholder="VD: Siêu thị, Ăn lẩu...">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-400 mb-1">Tổng tiền (VNĐ)</label>
+        <input id="im-amount" type="number" inputmode="numeric" min="0" step="1000" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Phân loại</label>
+          <select id="im-category" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Người đã trả</label>
+          <select id="im-payer" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 focus:outline-none"></select>
+        </div>
+      </div>
+      <div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-3 space-y-2">
+        <label class="block text-xs font-semibold text-indigo-300">Ai chịu khoản này?</label>
+        <select id="im-mode" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-sm">
+          <option value="equal">Chia đều cho người được chọn</option>
+          <option value="custom">Nhập số tiền riêng từng người</option>
+        </select>
+        <div id="im-equal" class="grid grid-cols-2 gap-2"></div>
+        <div id="im-custom" class="hidden space-y-2"></div>
+        <p id="im-remain" class="hidden text-xs"></p>
+      </div>
+      <div>
+        <label class="block text-xs text-gray-400 mb-1">Ảnh bill (không bắt buộc)</label>
+        <label class="flex items-center gap-3 border-2 border-dashed border-indigo-500/40 rounded-xl p-3 cursor-pointer bg-black/20">
+          <input type="file" accept="image/*" capture="environment" class="hidden" id="im-photo-input">
+          <i class="fas fa-camera text-indigo-300"></i>
+          <span class="text-sm text-gray-300 flex-1" id="im-photo-label">Chụp hoặc chọn ảnh bill</span>
+          <img id="im-photo-preview" class="hidden w-12 h-12 object-cover rounded-lg" alt="">
+        </label>
+        <button type="button" id="im-photo-remove" data-action="remove-photo" class="hidden mt-1 text-xs text-pink-300">Bỏ ảnh</button>
+      </div>
+    </div>
+    <div class="pt-4 mt-2 border-t border-white/10">
+      <button data-action="save-item" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-3 rounded-xl active:scale-95">Lưu vào sổ</button>
+    </div>
+  </div>
+</div>
 
-            renderSharedFunds(); // Render lại bảng để hiện/ẩn cột Tool
-        }
+<!-- MODAL: dialog chung -->
+<div id="dialog" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] items-center justify-center p-4">
+  <div class="glass-panel w-full max-w-sm rounded-[2rem] p-6 modal-animate space-y-4">
+    <h3 id="dlg-title" class="text-lg font-bold"></h3>
+    <p id="dlg-msg" class="text-sm text-gray-300"></p>
+    <input id="dlg-input" class="hidden w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500" maxlength="20">
+    <div class="flex gap-3">
+      <button data-action="dlg-cancel" class="flex-1 bg-white/10 hover:bg-white/20 py-2 rounded-xl text-sm">Hủy</button>
+      <button data-action="dlg-ok" id="dlg-ok" class="flex-1 bg-gradient-to-r from-indigo-500 to-pink-500 py-2 rounded-xl text-sm font-semibold">OK</button>
+    </div>
+  </div>
+</div>
 
-        // --- RENDER LOGIC ---
-        function renderAll() {
-            // Khởi tạo các giá trị paid ban đầu nếu thiếu
-            appData.members.forEach(m => {
-                if(!appData.paid[m]) appData.paid[m] = 0;
-            });
-            renderSharedFunds();
-            renderMembersCards();
-            updatePayerDropdown();
-            updateSplitCheckboxes();
-        }
+<!-- Lightbox ảnh bill -->
+<div id="lightbox" class="modal fixed inset-0 bg-black/90 z-[70] items-center justify-center p-4" data-action="close-lightbox">
+  <img id="lightbox-img" class="max-w-full max-h-full rounded-xl" alt="Ảnh bill">
+</div>
 
-        // RENDER BẢNG QUỸ CHUNG (Kết nối Thu/Chi)
-        function renderSharedFunds() {
-            // Header: Cột tên thành viên
-            const thContainer = document.getElementById('th-members-container');
-            thContainer.innerHTML = '';
-            appData.members.forEach(member => {
-                thContainer.innerHTML += `<th class="px-6 py-4 font-semibold text-right whitespace-nowrap">${member}</th>`;
-            });
+<!-- Toast -->
+<div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-black/90 text-white px-6 py-3 rounded-full text-sm font-medium z-[100] transition-all -translate-y-20 opacity-0 border border-white/10 shadow-xl flex items-center gap-2 pointer-events-none">
+  <i class="fas fa-info-circle text-pink-400"></i><span id="toast-msg"></span>
+</div>
 
-            const tbody = document.getElementById('quy-chung-table-body');
-            tbody.innerHTML = '';
+<script>
+/* ================= TIỆN ÍCH ================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' đ';
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const nowStr = () => new Date().toLocaleString('vi-VN');
 
-            // Biến cộng dồn cho hàng Tổng
-            let grandTotal = 0;
-            let memberTotals = {};
-            appData.members.forEach(m => memberTotals[m] = 0);
+// Chia đều theo số nguyên đồng: phần dư chia cho những người đầu danh sách => tổng luôn khớp
+function splitEqual(amount, ids) {
+  const out = {}; const n = ids.length;
+  if (!n) return out;
+  const base = Math.floor(amount / n); let rem = amount - base * n;
+  ids.forEach(id => { out[id] = base + (rem > 0 ? 1 : 0); if (rem > 0) rem--; });
+  return out;
+}
 
-            // Gộp fixedItems và bills để hiển thị
-            const allItems = [...appData.fixedItems];
-            appData.bills.forEach((b, index) => {
-                allItems.push({
-                    id: 'bill_' + index,
-                    name: b.name + ` (${b.category})`,
-                    total: b.amount,
-                    split: b.split,
-                    isBill: true // Đánh dấu là bill scan
-                });
-            });
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = $('toast');
+  $('toast-msg').innerText = msg;
+  t.querySelector('i').className = isError ? 'fas fa-exclamation-triangle text-red-500' : 'fas fa-check-circle text-emerald-400';
+  t.classList.remove('-translate-y-20', 'opacity-0');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('-translate-y-20', 'opacity-0'), 3000);
+}
 
-            // Vẽ từng hàng
-            allItems.forEach(item => {
-                grandTotal += item.total;
-                let rowHTML = `
-                    <tr class="hover:bg-white/5 transition-colors">
-                        <td class="px-6 py-4 font-medium text-white">${item.name}</td>
-                        <td class="px-6 py-4 text-right text-indigo-300 font-mono">${formatMoney(item.total)}</td>
-                `;
-                
-                appData.members.forEach(member => {
-                    const amount = item.split[member] || 0;
-                    memberTotals[member] += amount;
-                    rowHTML += `<td class="px-6 py-4 text-right text-gray-300 font-mono">${amount > 0 ? formatMoney(amount) : '0 đ'}</td>`;
-                });
+/* ================= DỮ LIỆU ================= */
+const STORAGE_KEY = 'house22.data.v1';
+const CATEGORIES = ['Cố định', 'Sinh hoạt', 'Đi chơi', 'Phát sinh'];
 
-                // Cột Tool cho Admin
-                rowHTML += `
-                    <td class="px-6 py-4 text-center admin-only ${isAdmin ? '' : 'hidden'}">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="editItem('${item.id}')" class="text-gray-400 hover:text-indigo-400"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteItem('${item.id}')" class="text-gray-400 hover:text-pink-400"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </td>
-                </tr>`;
-                tbody.innerHTML += rowHTML;
-            });
+function seedData() {
+  const members = [{ id: 'm1', name: 'Nghĩa' }, { id: 'm2', name: 'Hòa' }, { id: 'm3', name: 'Trí' }];
+  const mk = (id, name, amount, split) => ({ id, name, amount, category: 'Cố định', payerId: null, split, photo: null, createdAt: nowStr() });
+  return {
+    v: 1, members,
+    items: [
+      mk('i1', 'Tiền thuê nhà', 8000000, { m1: 7000000, m2: 0, m3: 1000000 }),
+      mk('i2', 'Tiền điện', 1118000, { m1: 559000, m2: 559000, m3: 0 }),
+      mk('i3', 'Tiền internet', 195000, { m1: 97500, m2: 97500, m3: 0 }),
+      mk('i4', 'Tiền ăn ở nhà', 4034000, { m1: 2017000, m2: 2017000, m3: 0 })
+    ],
+    log: [], periods: [], pinHash: null
+  };
+}
 
-            // FOOTER: HÀNG TỔNG
-            let tfootTong = `<td class="px-6 py-4">TỔNG PHẢI ĐÓNG</td><td class="px-6 py-4 text-right text-white font-mono">${formatMoney(grandTotal)}</td>`;
-            appData.members.forEach(m => {
-                tfootTong += `<td class="px-6 py-4 text-right text-white font-mono">${formatMoney(memberTotals[m])}</td>`;
-            });
-            if(isAdmin) tfootTong += `<td class="admin-only"></td>`;
-            document.getElementById('quy-chung-tfoot-tong').innerHTML = tfootTong;
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.members) && Array.isArray(d.items)) {
+        d.log = d.log || []; d.periods = d.periods || []; d.pinHash = d.pinHash || null;
+        return d;
+      }
+    }
+  } catch (e) {}
+  return seedData();
+}
 
-            // FOOTER: HÀNG ĐÃ CHI (Lấy từ Cá nhân)
-            let tfootDaChi = `<td class="px-6 py-4"><i class="fas fa-arrow-up mr-2"></i>ĐÃ CHI RA (Ứng trước)</td><td class="px-6 py-4 text-right font-mono">-</td>`;
-            appData.members.forEach(m => {
-                tfootDaChi += `<td class="px-6 py-4 text-right font-mono">${formatMoney(appData.paid[m] || 0)}</td>`;
-            });
-            if(isAdmin) tfootDaChi += `<td class="admin-only"></td>`;
-            document.getElementById('quy-chung-tfoot-dachi').innerHTML = tfootDaChi;
+let state = loadData();
+let isAdmin = false;
+try { isAdmin = sessionStorage.getItem('house22.admin') === '1'; } catch (e) {}
 
-            // FOOTER: HÀNG CẦN THU / CẦN TRẢ
-            let tfootCanThu = `<td class="px-6 py-4"><i class="fas fa-balance-scale mr-2"></i>THỰC TẾ (Nợ/Dư)</td><td class="px-6 py-4 text-right font-mono">-</td>`;
-            appData.members.forEach(m => {
-                let actual = memberTotals[m] - (appData.paid[m] || 0);
-                let textClass = actual > 0 ? 'text-pink-400' : (actual < 0 ? 'text-emerald-400' : 'text-gray-400');
-                let prefix = actual > 0 ? 'Nợ: ' : (actual < 0 ? 'Nhận: ' : '');
-                tfootCanThu += `<td class="px-6 py-4 text-right font-mono ${textClass}">${prefix}${formatMoney(Math.abs(actual))}</td>`;
-            });
-            if(isAdmin) tfootCanThu += `<td class="admin-only"></td>`;
-            document.getElementById('quy-chung-tfoot-canthu').innerHTML = tfootCanThu;
-        }
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
+  catch (e) { showToast('Bộ nhớ trình duyệt đầy hoặc bị chặn — hãy xuất file sao lưu!', true); return false; }
+}
 
-        // RENDER SỔ CÁ NHÂN (Thẻ từng người với Thu/Chi chi tiết)
-        function renderMembersCards() {
-            const container = document.getElementById('members-cards-container');
-            container.innerHTML = '';
-            
-            appData.members.forEach(member => {
-                // Liệt kê các bill mà người này ĐÃ CHI RA (Bảng Chi - Thu lại từ người khác)
-                let chiOutHtml = '';
-                let totalChiOut = 0;
-                appData.bills.forEach(b => {
-                    if(b.payer === member) {
-                        totalChiOut += b.amount;
-                        chiOutHtml += `
-                            <div class="flex justify-between text-xs py-1 border-b border-white/5 last:border-0">
-                                <span class="text-gray-400 truncate pr-2">${b.name}</span>
-                                <span class="text-white font-mono shrink-0">${formatMoney(b.amount)}</span>
-                            </div>
-                        `;
-                    }
-                });
-                // Update total paid state
-                appData.paid[member] = totalChiOut; 
-                if(chiOutHtml === '') chiOutHtml = '<p class="text-xs text-gray-500 italic">Chưa chi khoản nào</p>';
+function addLog(text, amount) {
+  state.log.unshift({ t: nowStr(), text, amount: amount ?? null });
+  if (state.log.length > 300) state.log.length = 300;
+}
 
-                // Liệt kê các khoản người này PHẢI ĐÓNG (Bảng Thu - Phải trả vào quỹ)
-                let phaiDongHtml = '';
-                let totalPhaiDong = 0;
-                // Từ fixed items
-                appData.fixedItems.forEach(fi => {
-                    if(fi.split[member] > 0) {
-                        totalPhaiDong += fi.split[member];
-                        phaiDongHtml += `
-                            <div class="flex justify-between text-xs py-1 border-b border-white/5 last:border-0">
-                                <span class="text-gray-400 truncate pr-2">${fi.name}</span>
-                                <span class="text-white font-mono shrink-0">${formatMoney(fi.split[member])}</span>
-                            </div>
-                        `;
-                    }
-                });
-                // Từ bills
-                appData.bills.forEach(b => {
-                    if(b.split[member] > 0) {
-                        totalPhaiDong += b.split[member];
-                        phaiDongHtml += `
-                            <div class="flex justify-between text-xs py-1 border-b border-white/5 last:border-0">
-                                <span class="text-gray-400 truncate pr-2">${b.name}</span>
-                                <span class="text-white font-mono shrink-0">${formatMoney(b.split[member])}</span>
-                            </div>
-                        `;
-                    }
-                });
-                if(phaiDongHtml === '') phaiDongHtml = '<p class="text-xs text-gray-500 italic">Không có khoản nợ</p>';
+const memberName = id => (state.members.find(m => m.id === id) || {}).name || '—';
+const requireAdmin = () => { if (!isAdmin) { showToast('Chỉ Chủ nhà mới làm được việc này', true); return false; } return true; };
 
-                let netBalance = totalPhaiDong - totalChiOut;
-                let badgeHtml = netBalance > 0 
-                    ? `<span class="bg-pink-500/20 text-pink-400 text-[10px] px-2 py-1 rounded-full border border-pink-500/30">Nợ Quỹ: ${formatMoney(netBalance)}</span>`
-                    : (netBalance < 0 ? `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full border border-emerald-500/30">Nhận lại: ${formatMoney(Math.abs(netBalance))}</span>` : `<span class="bg-gray-500/20 text-gray-400 text-[10px] px-2 py-1 rounded-full">Đã hòa</span>`);
+/* ================= TÍNH TOÁN ================= */
+function compute() {
+  const share = {}, paid = {};
+  state.members.forEach(m => { share[m.id] = 0; paid[m.id] = 0; });
+  let total = 0, unpaid = 0;
+  state.items.forEach(it => {
+    total += it.amount;
+    state.members.forEach(m => { share[m.id] += it.split[m.id] || 0; });
+    if (it.payerId && paid[it.payerId] !== undefined) paid[it.payerId] += it.amount;
+    else unpaid += it.amount;
+  });
+  const net = {};
+  state.members.forEach(m => { net[m.id] = share[m.id] - paid[m.id]; }); // >0: còn nợ, <0: được nhận lại
+  return { share, paid, net, total, unpaid };
+}
 
-                const card = `
-                    <div class="glass-panel rounded-[2rem] p-6 hover:-translate-y-1 transition-transform border-t border-white/10">
-                        <div class="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
-                                    <i class="fas fa-user text-xl text-indigo-300"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-white">${member}</h3>
-                                    ${badgeHtml}
-                                </div>
-                            </div>
-                            <button onclick="removeMember('${member}')" class="admin-only ${isAdmin ? '' : 'hidden'} text-gray-500 hover:text-pink-400 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <!-- Bảng Chi (Đã trả trước cho nhóm) -->
-                            <div class="bg-black/20 rounded-xl p-3 border border-white/5">
-                                <h4 class="text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider flex justify-between">
-                                    <span><i class="fas fa-arrow-up mr-1"></i>Bảng Chi (Ứng)</span>
-                                    <span>${formatMoney(totalChiOut)}</span>
-                                </h4>
-                                <div class="space-y-1 max-h-24 overflow-y-auto custom-scrollbar pr-1">
-                                    ${chiOutHtml}
-                                </div>
-                            </div>
+function computeTransfers(net) {
+  const cr = [], db = [];
+  state.members.forEach(m => {
+    const n = net[m.id];
+    if (n < 0) cr.push({ id: m.id, v: -n }); else if (n > 0) db.push({ id: m.id, v: n });
+  });
+  cr.sort((a, b) => b.v - a.v); db.sort((a, b) => b.v - a.v);
+  const out = [];
+  db.forEach(d => {
+    while (d.v > 0 && cr.length) {
+      const c = cr[0], x = Math.min(d.v, c.v);
+      out.push({ from: d.id, to: c.id, amount: x });
+      d.v -= x; c.v -= x;
+      if (c.v === 0) cr.shift();
+    }
+    if (d.v > 0) out.push({ from: d.id, to: null, amount: d.v }); // nộp vào quỹ chung
+  });
+  return out;
+}
 
-                            <!-- Bảng Thu (Phải đóng vào nhóm) -->
-                            <div class="bg-black/20 rounded-xl p-3 border border-white/5">
-                                <h4 class="text-xs font-semibold text-pink-400 mb-2 uppercase tracking-wider flex justify-between">
-                                    <span><i class="fas fa-arrow-down mr-1"></i>Bảng Phải Đóng</span>
-                                    <span>${formatMoney(totalPhaiDong)}</span>
-                                </h4>
-                                <div class="space-y-1 max-h-24 overflow-y-auto custom-scrollbar pr-1">
-                                    ${phaiDongHtml}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += card;
-            });
-        }
+/* ================= ĐIỀU HƯỚNG ================= */
+const TABS = [
+  { id: 'quychung', label: 'Quỹ Chung', icon: 'fa-wallet' },
+  { id: 'canhan', label: 'Cá Nhân', icon: 'fa-user-circle' },
+  { id: 'congno', label: 'Công Nợ', icon: 'fa-hand-holding-usd' },
+  { id: 'lichsu', label: 'Lịch Sử', icon: 'fa-history' },
+  { id: 'caidat', label: 'Cài Đặt', icon: 'fa-cog' },
+  { id: 'loau', label: 'LoAu', icon: 'fa-shield-alt' }
+];
+let currentTab = 'quychung';
 
-        // --- SCAN BILL MODAL LOGIC ---
-        function openScanModal() {
-            document.getElementById('scan-modal').classList.remove('hidden');
-            // Reset form
-            document.getElementById('scan-idle').classList.remove('hidden');
-            document.getElementById('scan-loading').classList.add('hidden');
-            const form = document.getElementById('scan-form');
-            form.classList.add('opacity-50', 'pointer-events-none');
-            document.getElementById('btn-save-bill').classList.add('opacity-50', 'cursor-not-allowed');
-            
-            document.getElementById('bill-name').value = '';
-            document.getElementById('bill-amount').value = '';
-            document.getElementById('bill-split-type').value = 'all';
-            toggleSplitCheckboxes();
-        }
+function buildNav() {
+  $('nav-desktop').innerHTML = TABS.map(t => `
+    <button data-tab="${t.id}" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-left">
+      <i class="fas ${t.icon} w-5"></i><span class="font-medium">${t.label}</span>
+    </button>`).join('');
+  $('nav-mobile').innerHTML = TABS.map(t => `
+    <button data-tab="${t.id}" class="nav-item relative flex-1 flex flex-col items-center justify-center py-2 rounded-full text-gray-400 transition-all">
+      <i class="fas ${t.icon} text-base mb-0.5"></i><span class="text-[9px] font-medium">${t.label}</span>
+      ${t.id === 'loau' ? '<span id="loau-dot" class="absolute top-1.5 right-3 w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>' : ''}
+    </button>`).join('');
+}
 
-        function closeScanModal() {
-            document.getElementById('scan-modal').classList.add('hidden');
-        }
+function switchTab(id) {
+  currentTab = id;
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  $('sec-' + id).classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === id));
+  document.querySelector('main').scrollTo({ top: 0 });
+}
 
-        function simulateScan() {
-            const idle = document.getElementById('scan-idle');
-            const loading = document.getElementById('scan-loading');
-            const form = document.getElementById('scan-form');
-            const btn = document.getElementById('btn-save-bill');
+/* ================= XÁC THỰC CHỦ NHÀ ================= */
+async function hashPin(s) {
+  try {
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('h22:' + s));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {}
+  let h = 5381; const str = 'h22:' + s;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return 'x' + h;
+}
 
-            idle.classList.add('hidden');
-            loading.classList.remove('hidden');
+async function handleLogin(e) {
+  e.preventDefault();
+  const user = $('login-username').value.trim().toLowerCase();
+  const pwd = $('login-password').value;
+  if (user !== 'admin' && user !== 'chunha') return showToast('Tên đăng nhập không hợp lệ', true);
+  if (!state.pinHash) {
+    if (pwd.length < 4) return showToast('Lần đầu: hãy đặt mật khẩu từ 4 ký tự', true);
+    state.pinHash = await hashPin(pwd); save();
+  } else if (await hashPin(pwd) !== state.pinHash) {
+    return showToast('Sai mật khẩu', true);
+  }
+  isAdmin = true;
+  try { sessionStorage.setItem('house22.admin', '1'); } catch (e) {}
+  $('login-password').value = '';
+  applyRole(); renderAll();
+  showToast('Đã cấp quyền Chủ Nhà!');
+}
 
-            setTimeout(() => {
-                loading.classList.add('hidden');
-                idle.classList.remove('hidden');
-                
-                // Mở khoá form
-                form.classList.remove('opacity-50', 'pointer-events-none');
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+function logout() {
+  isAdmin = false;
+  try { sessionStorage.removeItem('house22.admin'); } catch (e) {}
+  $('login-username').value = ''; $('login-password').value = '';
+  applyRole(); renderAll();
+  showToast('Đã thoát chế độ Chủ nhà');
+}
 
-                // Điền dummy data cho sinh động
-                document.getElementById('bill-name').value = "Ăn lẩu cuối tuần";
-                document.getElementById('bill-amount').value = 650000;
-                
-            }, 1500);
-        }
+function applyRole() {
+  document.body.classList.toggle('is-admin', isAdmin);
+  $('login-form').classList.toggle('hidden', isAdmin);
+  $('logged-in-state').classList.toggle('hidden', !isAdmin);
+  $('login-hint').classList.toggle('hidden', !!state.pinHash);
+  const dot = $('loau-dot'); if (dot) dot.classList.toggle('hidden', isAdmin);
+  $('role-desktop').innerText = isAdmin ? 'Chủ Nhà (Admin)' : 'Khách';
+  $('role-desktop').className = 'text-sm font-medium truncate ' + (isAdmin ? 'text-pink-400' : 'text-white');
+  $('role-mobile').innerText = isAdmin ? 'Admin' : 'Khách';
+  $('user-avatar-icon').className = isAdmin ? 'fas fa-crown text-xs text-pink-400' : 'fas fa-user text-xs text-gray-300';
+  $('settings-lock').classList.toggle('hidden', isAdmin);
+}
 
-        function updatePayerDropdown() {
-            const select = document.getElementById('bill-payer');
-            select.innerHTML = '';
-            appData.members.forEach(m => {
-                select.innerHTML += `<option value="${m}">${m}</option>`;
-            });
-        }
 
-        function updateSplitCheckboxes() {
-            const container = document.getElementById('split-checkboxes');
-            container.innerHTML = '';
-            appData.members.forEach(m => {
-                container.innerHTML += `
-                    <label class="flex items-center gap-2 text-sm text-gray-300 bg-white/5 p-2 rounded-lg cursor-pointer hover:bg-white/10 border border-white/5">
-                        <input type="checkbox" value="${m}" class="split-cb rounded bg-black/40 border-white/20 text-pink-500 focus:ring-pink-500 focus:ring-offset-gray-900" checked>
-                        ${m}
-                    </label>
-                `;
-            });
-        }
+/* ================= RENDER ================= */
+function renderAll() {
+  renderTable(); renderCards(); renderDebts(); renderHistory();
+}
 
-        function toggleSplitCheckboxes() {
-            const type = document.getElementById('bill-split-type').value;
-            const container = document.getElementById('split-checkboxes');
-            if(type === 'custom') {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-                // Tự động check hết nếu chọn All
-                document.querySelectorAll('.split-cb').forEach(cb => cb.checked = true);
-            }
-        }
+function renderTable() {
+  const c = compute();
+  const cols = state.members.map(m => `<th class="px-4 py-4 font-semibold text-right whitespace-nowrap">${esc(m.name)}</th>`).join('');
+  $('thead-row').innerHTML = `<th class="px-4 py-4 font-semibold whitespace-nowrap">Các mục</th>
+    <th class="px-4 py-4 font-semibold text-right whitespace-nowrap">Tổng (VNĐ)</th>${cols}
+    ${isAdmin ? '<th class="px-4 py-4 font-semibold text-center">Tool</th>' : ''}`;
 
-        function saveBill() {
-            const name = document.getElementById('bill-name').value;
-            const amount = parseFloat(document.getElementById('bill-amount').value);
-            const category = document.getElementById('bill-category').value;
-            const payer = document.getElementById('bill-payer').value;
-            
-            if(!name || !amount) {
-                showToast("Vui lòng điền đủ Tên và Số tiền!", true);
-                return;
-            }
+  const colCount = state.members.length + 2 + (isAdmin ? 1 : 0);
+  if (!state.items.length) {
+    $('tbody').innerHTML = `<tr><td colspan="${colCount}" class="px-6 py-8 text-center text-gray-500">Chưa có khoản chi nào</td></tr>`;
+  } else {
+    $('tbody').innerHTML = state.items.map(it => {
+      const cells = state.members.map(m => {
+        const a = it.split[m.id] || 0;
+        return `<td class="px-4 py-3 text-right font-mono ${a ? 'text-gray-200' : 'text-gray-600'}">${a ? fmt(a) : '0 đ'}</td>`;
+      }).join('');
+      const payer = it.payerId ? `${esc(memberName(it.payerId))} trả` : 'Chưa ai ứng';
+      return `<tr class="hover:bg-white/5">
+        <td class="px-4 py-3 min-w-[160px]">
+          <div class="font-medium">${esc(it.name)}${it.photo ? ` <button data-action="view-photo" data-id="${it.id}" class="text-indigo-300 ml-1"><i class="fas fa-image"></i></button>` : ''}</div>
+          <div class="text-[10px] text-gray-500">${esc(it.category)} • ${payer}</div>
+        </td>
+        <td class="px-4 py-3 text-right text-indigo-300 font-mono">${fmt(it.amount)}</td>${cells}
+        ${isAdmin ? `<td class="px-4 py-3 text-center whitespace-nowrap">
+          <button data-action="edit-item" data-id="${it.id}" class="text-gray-400 hover:text-indigo-400 px-1"><i class="fas fa-edit"></i></button>
+          <button data-action="delete-item" data-id="${it.id}" class="text-gray-400 hover:text-pink-400 px-1"><i class="fas fa-trash-alt"></i></button>
+        </td>` : ''}</tr>`;
+    }).join('');
+  }
 
-            // Logic tính chia tiền
-            let splitObj = {};
-            let checkedMembers = [];
-            
-            const type = document.getElementById('bill-split-type').value;
-            if(type === 'all') {
-                checkedMembers = [...appData.members];
-            } else {
-                document.querySelectorAll('.split-cb:checked').forEach(cb => {
-                    checkedMembers.push(cb.value);
-                });
-            }
+  const adminCell = isAdmin ? '<td></td>' : '';
+  const shareCells = state.members.map(m => `<td class="px-4 py-3 text-right font-mono">${fmt(c.share[m.id])}</td>`).join('');
+  const paidCells = state.members.map(m => `<td class="px-4 py-3 text-right font-mono">${fmt(c.paid[m.id])}</td>`).join('');
+  const netCells = state.members.map(m => {
+    const n = c.net[m.id];
+    const cls = n > 0 ? 'text-pink-400' : n < 0 ? 'text-emerald-400' : 'text-gray-400';
+    const pre = n > 0 ? 'Nợ: ' : n < 0 ? 'Nhận: ' : '';
+    return `<td class="px-4 py-3 text-right font-mono ${cls}">${pre}${fmt(Math.abs(n))}</td>`;
+  }).join('');
+  $('tfoot').innerHTML = `
+    <tr><td class="px-4 py-3">TỔNG PHẢI ĐÓNG</td><td class="px-4 py-3 text-right font-mono">${fmt(c.total)}</td>${shareCells}${adminCell}</tr>
+    <tr class="text-pink-300 bg-black/20"><td class="px-4 py-3"><i class="fas fa-arrow-up mr-2"></i>ĐÃ CHI RA (ứng trước)</td><td class="px-4 py-3 text-right font-mono">${fmt(c.total - c.unpaid)}</td>${paidCells}${adminCell}</tr>
+    <tr class="bg-black/40"><td class="px-4 py-3"><i class="fas fa-balance-scale mr-2"></i>THỰC TẾ (Nợ / Nhận)</td><td class="px-4 py-3 text-right font-mono">-</td>${netCells}${adminCell}</tr>`;
 
-            if(checkedMembers.length === 0) {
-                showToast("Phải chọn ít nhất 1 người để chia bill!", true);
-                return;
-            }
+  const note = $('unpaid-note');
+  if (c.unpaid > 0) {
+    note.classList.remove('hidden');
+    note.innerHTML = `<i class="fas fa-info-circle mr-1"></i> Có <b>${fmt(c.unpaid)}</b> chưa ai ứng trước (ví dụ tiền nhà, điện, net chưa ai đóng) — các khoản này sẽ được nộp vào quỹ chung/chủ nhà. Nếu có người đã trả hộ, hãy sửa khoản đó và chọn "Người đã trả".`;
+  } else note.classList.add('hidden');
+}
 
-            const splitAmount = amount / checkedMembers.length;
-            appData.members.forEach(m => {
-                splitObj[m] = checkedMembers.includes(m) ? splitAmount : 0;
-            });
+function renderCards() {
+  $('members-cards').innerHTML = state.members.map(m => {
+    const paidItems = state.items.filter(i => i.payerId === m.id);
+    const owedItems = state.items.filter(i => (i.split[m.id] || 0) > 0);
+    const totalPaid = paidItems.reduce((s, i) => s + i.amount, 0);
+    const totalOwed = owedItems.reduce((s, i) => s + i.split[m.id], 0);
+    const net = totalOwed - totalPaid;
+    const row = (n, a) => `<div class="flex justify-between text-xs py-1 border-b border-white/5 last:border-0"><span class="text-gray-400 truncate pr-2">${esc(n)}</span><span class="font-mono shrink-0">${fmt(a)}</span></div>`;
+    const badge = net > 0
+      ? `<span class="bg-pink-500/20 text-pink-400 text-[10px] px-2 py-1 rounded-full border border-pink-500/30">Nợ quỹ: ${fmt(net)}</span>`
+      : net < 0 ? `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-full border border-emerald-500/30">Nhận lại: ${fmt(-net)}</span>`
+      : `<span class="bg-gray-500/20 text-gray-400 text-[10px] px-2 py-1 rounded-full">Đã hòa</span>`;
+    return `<div class="glass-panel rounded-[2rem] p-6 border-t border-white/10">
+      <div class="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center border border-white/10"><i class="fas fa-user text-xl text-indigo-300"></i></div>
+          <div><h3 class="text-lg font-bold">${esc(m.name)}</h3>${badge}</div>
+        </div>
+        <div class="admin-only">
+          <button data-action="rename-member" data-id="${m.id}" class="text-gray-500 hover:text-indigo-300 w-8 h-8 rounded-full hover:bg-white/10"><i class="fas fa-pen text-xs"></i></button>
+          <button data-action="remove-member" data-id="${m.id}" class="text-gray-500 hover:text-pink-400 w-8 h-8 rounded-full hover:bg-white/10"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <div class="bg-black/20 rounded-xl p-3 border border-white/5">
+          <h4 class="text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-up mr-1"></i>Đã ứng</span><span>${fmt(totalPaid)}</span></h4>
+          <div class="max-h-28 overflow-y-auto pr-1">${paidItems.map(i => row(i.name, i.amount)).join('') || '<p class="text-xs text-gray-500 italic">Chưa ứng khoản nào</p>'}</div>
+        </div>
+        <div class="bg-black/20 rounded-xl p-3 border border-white/5">
+          <h4 class="text-xs font-semibold text-pink-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-down mr-1"></i>Phải đóng</span><span>${fmt(totalOwed)}</span></h4>
+          <div class="max-h-28 overflow-y-auto pr-1">${owedItems.map(i => row(i.name, i.split[m.id])).join('') || '<p class="text-xs text-gray-500 italic">Không có khoản nào</p>'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-            // Lưu bill mới
-            const newBill = {
-                name: name,
-                amount: amount,
-                category: category,
-                payer: payer,
-                split: splitObj,
-                date: new Date().toLocaleString('vi-VN')
-            };
+function transferHtml(list) {
+  if (!list.length) return '<p class="text-sm text-gray-400">Không ai nợ ai — đã hòa.</p>';
+  return list.map(t => `<div class="flex items-center justify-between bg-black/20 rounded-xl px-4 py-3 text-sm border border-white/5">
+    <span><b>${esc(memberName(t.from))}</b> <i class="fas fa-arrow-right mx-1 text-pink-400"></i> <b>${t.to ? esc(memberName(t.to)) : 'Quỹ chung / Chủ nhà'}</b></span>
+    <span class="font-mono text-emerald-300">${fmt(t.amount)}</span></div>`).join('');
+}
 
-            appData.bills.push(newBill);
-            
-            // Cập nhật Lịch Sử
-            const historyList = document.getElementById('history-list');
-            if(historyList.innerHTML.includes("Chưa có dữ liệu")) historyList.innerHTML = '';
-            
-            historyList.innerHTML = `
-                <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 border-l-4 border-l-pink-500">
-                    <div>
-                        <p class="text-sm font-semibold text-white">${newBill.name} <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded ml-2">${newBill.category}</span></p>
-                        <p class="text-xs text-gray-400 mt-1">${newBill.date} • ${newBill.payer} đã trả</p>
-                    </div>
-                    <span class="font-mono text-pink-400 font-bold">${formatMoney(newBill.amount)}</span>
-                </div>
-            ` + historyList.innerHTML;
+function renderDebts() {
+  const c = compute();
+  $('transfers').innerHTML = transferHtml(computeTransfers(c.net));
+  $('periods').innerHTML = state.periods.length ? state.periods.map(p => `
+    <details class="bg-black/20 rounded-xl border border-white/5">
+      <summary class="px-4 py-3 cursor-pointer text-sm flex justify-between gap-2"><span class="font-medium">${esc(p.label)}</span><span class="text-gray-400 text-xs">${esc(p.closedAt)} • ${fmt(p.total)}</span></summary>
+      <div class="px-4 pb-4 space-y-2">
+        ${p.transfers.map(t => `<div class="flex justify-between text-xs"><span>${esc(t.from)} → ${esc(t.to)}</span><span class="font-mono text-emerald-300">${fmt(t.amount)}</span></div>`).join('') || '<p class="text-xs text-gray-500">Không có khoản chuyển nào</p>'}
+      </div>
+    </details>`).join('') : '<p class="text-sm text-gray-500">Chưa có kỳ nào được chốt</p>';
+}
 
-            showToast("Đã lưu & phân bổ chi phí!");
-            closeScanModal();
-            renderAll(); // Vẽ lại toàn bộ (Bảng chung & Sổ cá nhân)
-            switchTab('quychung'); // Tự động nhảy sang Quỹ chung xem kết quả
-        }
+function renderHistory() {
+  $('history-list').innerHTML = state.log.length ? state.log.map(l => `
+    <div class="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-xl border border-white/5 border-l-4 border-l-pink-500">
+      <div class="min-w-0"><p class="text-sm font-medium">${esc(l.text)}</p><p class="text-xs text-gray-400 mt-1">${esc(l.t)}</p></div>
+      ${l.amount != null ? `<span class="font-mono text-pink-400 font-bold shrink-0 text-sm">${fmt(l.amount)}</span>` : ''}
+    </div>`).join('') : '<p class="text-gray-500 text-center py-4 text-sm">Chưa có hoạt động nào</p>';
+}
 
-        // --- ADMIN TOOL LOGIC ---
-        function addMember() {
-            if(!isAdmin) return;
-            // Fake prompt bằng cách add tên ngẫu nhiên hoặc hỏi
-            // Vì dùng prompt thật bị chặn trên một số iframe nên ta giả lập
-            const newName = "Member" + (appData.members.length + 1);
-            appData.members.push(newName);
-            
-            // Cập nhật các bảng chia tiền cũ (gán 0 đ cho người mới)
-            appData.fixedItems.forEach(item => item.split[newName] = 0);
-            appData.bills.forEach(bill => bill.split[newName] = 0);
-            appData.paid[newName] = 0;
-            
-            renderAll();
-            showToast(`Đã thêm thành viên: ${newName}`);
-        }
+/* ================= DIALOG CHUNG ================= */
+let dlgCb = null;
+function openDialog({ title, msg = '', input = null, okText = 'OK', cb }) {
+  $('dlg-title').innerText = title; $('dlg-msg').innerText = msg; $('dlg-ok').innerText = okText;
+  const inp = $('dlg-input');
+  if (input !== null) { inp.classList.remove('hidden'); inp.value = input; setTimeout(() => inp.focus(), 50); }
+  else inp.classList.add('hidden');
+  dlgCb = cb; $('dialog').classList.add('open');
+}
+function closeDialog() { $('dialog').classList.remove('open'); dlgCb = null; }
 
-        function removeMember(name) {
-            if(!isAdmin) return;
-            appData.members = appData.members.filter(m => m !== name);
-            delete appData.paid[name];
-            
-            appData.fixedItems.forEach(item => delete item.split[name]);
-            appData.bills.forEach(bill => delete bill.split[name]);
-            
-            renderAll();
-            showToast(`Đã xóa thành viên: ${name}`);
-        }
+/* ================= KHOẢN CHI (thêm / sửa) ================= */
+let editingId = null, draftPhoto = null;
 
-        function editItem(id) {
-            if(!isAdmin) return;
-            showToast(`Tính năng Sửa khoản [${id}] sẽ mở modal chi tiết cho Chủ nhà.`);
-            // Logic mở modal sửa phân bổ nâng cao (Placeholder)
-        }
+function openItemModal(id) {
+  if (id && !requireAdmin()) return;
+  editingId = id || null;
+  const it = id ? state.items.find(i => i.id === id) : null;
+  $('im-title').innerText = it ? 'Sửa khoản chi' : 'Ghi nhận chi phí';
+  $('im-name').value = it ? it.name : '';
+  $('im-amount').value = it ? it.amount : '';
+  const cats = isAdmin ? CATEGORIES : CATEGORIES.filter(c => c !== 'Cố định');
+  $('im-category').innerHTML = cats.map(c => `<option ${it && it.category === c ? 'selected' : ''}>${c}</option>`).join('');
+  $('im-payer').innerHTML = `<option value="">Chưa ai ứng (quỹ chung)</option>` +
+    state.members.map(m => `<option value="${m.id}" ${it && it.payerId === m.id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
+  if (!it && state.members.length) $('im-payer').value = state.members[0].id;
 
-        function deleteItem(id) {
-            if(!isAdmin) return;
-            if(id.startsWith('bill_')) {
-                const index = parseInt(id.replace('bill_', ''));
-                appData.bills.splice(index, 1);
-            } else {
-                appData.fixedItems = appData.fixedItems.filter(item => item.id !== id);
-            }
-            renderAll();
-            showToast("Đã xóa khoản chi!");
-        }
+  // Xác định chế độ chia
+  let mode = 'equal', checked = state.members.map(m => m.id);
+  if (it) {
+    checked = state.members.filter(m => (it.split[m.id] || 0) > 0).map(m => m.id);
+    const eq = splitEqual(it.amount, checked);
+    const same = state.members.every(m => (eq[m.id] || 0) === (it.split[m.id] || 0));
+    mode = same ? 'equal' : 'custom';
+  }
+  $('im-mode').value = mode;
+  $('im-equal').innerHTML = state.members.map(m => `
+    <label class="flex items-center gap-2 text-sm bg-white/5 p-2 rounded-lg cursor-pointer border border-white/5">
+      <input type="checkbox" value="${m.id}" class="im-cb accent-pink-500" ${checked.includes(m.id) ? 'checked' : ''}> ${esc(m.name)}
+    </label>`).join('');
+  $('im-custom').innerHTML = state.members.map(m => `
+    <div class="flex items-center gap-2"><span class="text-sm w-24 truncate">${esc(m.name)}</span>
+    <input type="number" min="0" step="1000" data-mid="${m.id}" value="${it ? (it.split[m.id] || 0) : 0}" class="im-custom-input flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-indigo-500"></div>`).join('');
+  draftPhoto = it ? it.photo : null;
+  updatePhotoUI();
+  syncModeUI();
+  $('item-modal').classList.add('open');
+}
 
-        // Khởi tạo app
-        renderAll();
-    </script>
+function syncModeUI() {
+  const custom = $('im-mode').value === 'custom';
+  $('im-equal').classList.toggle('hidden', custom);
+  $('im-custom').classList.toggle('hidden', !custom);
+  $('im-remain').classList.toggle('hidden', !custom);
+  if (custom) updateRemain();
+}
+
+function updateRemain() {
+  const amount = Math.round(parseFloat($('im-amount').value) || 0);
+  const sum = Array.from(document.querySelectorAll('.im-custom-input')).reduce((s, i) => s + (Math.round(parseFloat(i.value)) || 0), 0);
+  const diff = amount - sum, el = $('im-remain');
+  if (diff === 0) { el.className = 'text-xs text-emerald-400'; el.innerText = 'Đã khớp tổng tiền ✓'; }
+  else { el.className = 'text-xs text-amber-300'; el.innerText = diff > 0 ? `Còn thiếu ${fmt(diff)} chưa phân bổ` : `Đang vượt ${fmt(-diff)} so với tổng`; }
+}
+
+function updatePhotoUI() {
+  const prev = $('im-photo-preview');
+  if (draftPhoto) { prev.src = draftPhoto; prev.classList.remove('hidden'); $('im-photo-label').innerText = 'Đã đính kèm ảnh'; $('im-photo-remove').classList.remove('hidden'); }
+  else { prev.classList.add('hidden'); $('im-photo-label').innerText = 'Chụp hoặc chọn ảnh bill'; $('im-photo-remove').classList.add('hidden'); }
+}
+
+function fileToThumb(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const max = 640, k = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url); resolve(cv.toDataURL('image/jpeg', 0.6));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+    img.src = url;
+  });
+}
+
+function saveItem() {
+  const name = $('im-name').value.trim();
+  const amount = Math.round(parseFloat($('im-amount').value));
+  const category = $('im-category').value;
+  const payerId = $('im-payer').value || null;
+  if (!name) return showToast('Nhập tên khoản chi', true);
+  if (!amount || amount <= 0) return showToast('Số tiền phải lớn hơn 0', true);
+
+  let split = {};
+  if ($('im-mode').value === 'equal') {
+    const ids = Array.from(document.querySelectorAll('.im-cb:checked')).map(c => c.value);
+    if (!ids.length) return showToast('Chọn ít nhất 1 người chịu khoản này', true);
+    split = splitEqual(amount, ids);
+    state.members.forEach(m => { if (split[m.id] === undefined) split[m.id] = 0; });
+  } else {
+    let sum = 0;
+    document.querySelectorAll('.im-custom-input').forEach(i => {
+      const v = Math.max(0, Math.round(parseFloat(i.value)) || 0); split[i.dataset.mid] = v; sum += v;
+    });
+    if (sum !== amount) return showToast(`Tổng chia (${fmt(sum)}) chưa khớp tổng tiền (${fmt(amount)})`, true);
+  }
+
+  if (editingId) {
+    const it = state.items.find(i => i.id === editingId);
+    Object.assign(it, { name, amount, category, payerId, split, photo: draftPhoto });
+    addLog(`Sửa: ${name}`, amount);
+  } else {
+    state.items.push({ id: uid('i'), name, amount, category, payerId, split, photo: draftPhoto, createdAt: nowStr() });
+    addLog(`Thêm: ${name}${payerId ? ' (' + memberName(payerId) + ' trả)' : ''}`, amount);
+  }
+  save();
+  $('item-modal').classList.remove('open');
+  renderAll(); switchTab('quychung');
+  showToast('Đã lưu & phân bổ chi phí!');
+}
+
+function deleteItem(id) {
+  if (!requireAdmin()) return;
+  const it = state.items.find(i => i.id === id); if (!it) return;
+  openDialog({ title: 'Xóa khoản chi?', msg: `"${it.name}" — ${fmt(it.amount)}`, okText: 'Xóa', cb: () => {
+    state.items = state.items.filter(i => i.id !== id);
+    addLog(`Xóa: ${it.name}`, it.amount); save(); renderAll(); showToast('Đã xóa khoản chi');
+  }});
+}
+
+/* ================= THÀNH VIÊN ================= */
+function addMember() {
+  if (!requireAdmin()) return;
+  openDialog({ title: 'Thêm thành viên', msg: 'Nhập tên thành viên mới', input: '', okText: 'Thêm', cb: v => {
+    const name = (v || '').trim();
+    if (!name) return showToast('Tên không được để trống', true);
+    if (state.members.some(m => m.name.toLowerCase() === name.toLowerCase())) return showToast('Tên đã tồn tại', true);
+    const m = { id: uid('m'), name };
+    state.members.push(m);
+    state.items.forEach(i => i.split[m.id] = 0);
+    addLog(`Thêm thành viên: ${name}`); save(); renderAll(); showToast('Đã thêm ' + name);
+  }});
+}
+
+function renameMember(id) {
+  if (!requireAdmin()) return;
+  const m = state.members.find(x => x.id === id);
+  openDialog({ title: 'Đổi tên', input: m.name, okText: 'Lưu', cb: v => {
+    const name = (v || '').trim();
+    if (!name) return showToast('Tên không được để trống', true);
+    if (state.members.some(x => x.id !== id && x.name.toLowerCase() === name.toLowerCase())) return showToast('Tên đã tồn tại', true);
+    addLog(`Đổi tên ${m.name} → ${name}`); m.name = name; save(); renderAll();
+  }});
+}
+
+function removeMember(id) {
+  if (!requireAdmin()) return;
+  const m = state.members.find(x => x.id === id);
+  if (state.members.length <= 1) return showToast('Phải còn ít nhất 1 thành viên', true);
+  if (state.items.some(i => i.payerId === id)) return showToast(`${m.name} đang là người ứng tiền ở một số khoản — hãy sửa/xóa các khoản đó trước`, true);
+  openDialog({ title: `Xóa ${m.name}?`, msg: 'Phần tiền của người này ở từng khoản sẽ được chia đều lại cho các thành viên còn lại để tổng không bị lệch.', okText: 'Xóa', cb: () => {
+    state.members = state.members.filter(x => x.id !== id);
+    const rest = state.members.map(x => x.id);
+    state.items.forEach(i => {
+      const removed = i.split[id] || 0; delete i.split[id];
+      if (removed > 0) {
+        const add = splitEqual(removed, rest);
+        rest.forEach(r => i.split[r] = (i.split[r] || 0) + add[r]);
+      }
+    });
+    addLog(`Xóa thành viên: ${m.name}`); save(); renderAll(); showToast('Đã xóa ' + m.name);
+  }});
+}
+
+/* ================= CHỐT SỔ / SAO LƯU ================= */
+function closePeriod() {
+  if (!requireAdmin()) return;
+  const d = new Date();
+  openDialog({ title: 'Chốt sổ kỳ này', msg: 'Các khoản "Cố định" được giữ lại cho kỳ sau, các khoản còn lại sẽ được lưu vào lịch sử kỳ và xóa khỏi sổ.', input: `Tháng ${d.getMonth() + 1}/${d.getFullYear()}`, okText: 'Chốt sổ', cb: v => {
+    const label = (v || '').trim() || 'Kỳ chưa đặt tên';
+    const c = compute();
+    state.periods.unshift({
+      id: uid('p'), label, closedAt: nowStr(), total: c.total,
+      transfers: computeTransfers(c.net).map(t => ({ from: memberName(t.from), to: t.to ? memberName(t.to) : 'Quỹ chung', amount: t.amount }))
+    });
+    state.items = state.items.filter(i => i.category === 'Cố định');
+    addLog(`Chốt sổ: ${label}`, c.total); save(); renderAll(); showToast('Đã chốt sổ ' + label);
+  }});
+}
+
+function exportData() {
+  if (!requireAdmin()) return;
+  const copy = JSON.parse(JSON.stringify(state)); copy.pinHash = null; // không xuất mật khẩu
+  const blob = new Blob([JSON.stringify(copy, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `house22-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function importData(file) {
+  if (!requireAdmin() || !file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!Array.isArray(d.members) || !Array.isArray(d.items) || !d.members.every(m => m.id && m.name)) throw 0;
+      openDialog({ title: 'Nhập dữ liệu?', msg: 'Toàn bộ dữ liệu hiện tại trên máy này sẽ bị thay thế.', okText: 'Nhập', cb: () => {
+        d.log = d.log || []; d.periods = d.periods || []; d.pinHash = state.pinHash;
+        state = d; addLog('Nhập dữ liệu từ file sao lưu'); save(); renderAll(); showToast('Đã nhập dữ liệu');
+      }});
+    } catch (e) { showToast('File không hợp lệ', true); }
+  };
+  r.readAsText(file);
+}
+
+function resetAll() {
+  if (!requireAdmin()) return;
+  openDialog({ title: 'Xóa toàn bộ dữ liệu?', msg: 'Không thể hoàn tác. Hãy xuất file sao lưu trước nếu cần.', okText: 'Xóa hết', cb: () => {
+    const pin = state.pinHash; state = seedData(); state.pinHash = pin; addLog('Đặt lại dữ liệu mẫu'); save(); renderAll(); showToast('Đã đặt lại dữ liệu');
+  }});
+}
+
+/* ================= SỰ KIỆN ================= */
+document.addEventListener('click', e => {
+  const tabBtn = e.target.closest('[data-tab]');
+  if (tabBtn) return switchTab(tabBtn.dataset.tab);
+  const el = e.target.closest('[data-action]'); if (!el) return;
+  const id = el.dataset.id;
+  switch (el.dataset.action) {
+    case 'add-item': openItemModal(); break;
+    case 'edit-item': openItemModal(id); break;
+    case 'delete-item': deleteItem(id); break;
+    case 'save-item': saveItem(); break;
+    case 'close-modal': $('item-modal').classList.remove('open'); break;
+    case 'remove-photo': draftPhoto = null; updatePhotoUI(); break;
+    case 'view-photo': { const it = state.items.find(i => i.id === id); if (it && it.photo) { $('lightbox-img').src = it.photo; $('lightbox').classList.add('open'); } break; }
+    case 'close-lightbox': $('lightbox').classList.remove('open'); break;
+    case 'add-member': addMember(); break;
+    case 'rename-member': renameMember(id); break;
+    case 'remove-member': removeMember(id); break;
+    case 'close-period': closePeriod(); break;
+    case 'export': exportData(); break;
+    case 'reset-all': resetAll(); break;
+    case 'logout': logout(); break;
+    case 'dlg-cancel': closeDialog(); break;
+    case 'dlg-ok': { const cb = dlgCb, v = $('dlg-input').value; closeDialog(); if (cb) cb(v); break; }
+  }
+});
+
+$('login-form').addEventListener('submit', handleLogin);
+$('im-mode').addEventListener('change', syncModeUI);
+$('im-amount').addEventListener('input', () => { if ($('im-mode').value === 'custom') updateRemain(); });
+$('im-custom').addEventListener('input', updateRemain);
+$('im-photo-input').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { draftPhoto = await fileToThumb(f); updatePhotoUI(); } catch (err) { showToast('Không đọc được ảnh', true); }
+  e.target.value = '';
+});
+$('import-file').addEventListener('change', e => { importData(e.target.files[0]); e.target.value = ''; });
+$('dlg-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('dlg-ok').click(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $('item-modal').classList.remove('open'); $('lightbox').classList.remove('open'); closeDialog(); }
+});
+
+/* ================= ĐỒNG HỒ ================= */
+function updateClock() {
+  const now = new Date();
+  $('clock-desktop').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' • ' + now.toLocaleTimeString('vi-VN');
+  $('clock-mobile').innerText = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+setInterval(updateClock, 1000); updateClock();
+
+/* ================= KHỞI TẠO ================= */
+buildNav(); applyRole(); renderAll(); switchTab('quychung');
+</script>
 </body>
 </html>
