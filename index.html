@@ -85,6 +85,7 @@
         </div>
         <div class="flex gap-2 w-full md:w-auto">
           <button data-action="scan-bill" class="admin-only flex-1 md:flex-none text-center bg-gradient-to-r from-pink-500 to-indigo-500 hover:opacity-90 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-pink-500/25 active:scale-95"><i class="fas fa-camera mr-2"></i>Quét bill (AI)</button>
+          <button data-action="scan-gallery" class="admin-only text-center bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-3 rounded-2xl font-semibold active:scale-95" title="Chọn ảnh bill có sẵn để AI đọc"><i class="fas fa-image mr-2"></i>Thư viện</button>
           <button data-action="add-item" class="flex-1 md:flex-none bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-pink-500/25 transition-all active:scale-95 flex items-center justify-center gap-2">
             <i class="fas fa-plus text-lg"></i><span>Thêm khoản chi</span>
           </button>
@@ -140,9 +141,18 @@
     <!-- CÀI ĐẶT -->
     <section id="sec-caidat" class="tab-content hidden space-y-6">
       <h2 class="text-2xl font-bold">Cài Đặt Hệ Thống</h2>
+      <div class="admin-only glass-panel rounded-[2rem] p-6 max-w-xl space-y-3">
+        <h3 class="font-semibold text-indigo-300 border-b border-white/10 pb-2">Ai được vào app (email Google)</h3>
+        <div id="access-list" class="space-y-2"></div>
+        <div class="flex gap-2">
+          <input id="access-email" type="email" placeholder="email@gmail.com" autocomplete="off" class="flex-1 min-w-0 bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-500">
+          <button data-action="access-add" class="bg-gradient-to-r from-indigo-500 to-pink-500 px-4 rounded-xl text-sm font-semibold">Thêm</button>
+        </div>
+        <p class="text-[10px] text-gray-500">Thành viên: xem sổ và thêm khoản chi. Chủ nhà: sửa/xóa, chốt sổ, quản lý thành viên.</p>
+      </div>
       <div class="admin-only glass-panel rounded-[2rem] p-6 max-w-xl space-y-4">
         <h3 class="font-semibold text-indigo-300 border-b border-white/10 pb-2">AI đọc bill (Gemini)</h3>
-        <p class="text-xs text-gray-400">Lấy API key tại aistudio.google.com/apikey. Key chỉ lưu trên thiết bị này, không nằm trong file sao lưu. Ảnh bill sẽ được gửi tới Google để đọc.</p>
+        <p class="text-xs text-gray-400">Lấy API key tại aistudio.google.com/apikey. Key lưu trên Firebase (chỉ Chủ nhà đọc được), nhập một lần dùng cho mọi máy của Chủ nhà. Ảnh bill sẽ được gửi tới Google để đọc.</p>
         <div><label class="block text-xs text-gray-400 mb-1">Gemini API key</label>
           <input id="gem-key" type="password" autocomplete="off" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm font-mono focus:outline-none focus:border-indigo-500"></div>
         <div><label class="block text-xs text-gray-400 mb-1">Model</label>
@@ -157,9 +167,8 @@
         <div id="settings-lock" class="absolute inset-0 bg-gray-900/60 backdrop-blur-md z-10 flex flex-col items-center justify-center rounded-[2rem]">
           <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-3"><i class="fas fa-lock text-xl text-pink-400"></i></div>
           <span class="font-medium">Khu vực dành riêng cho Chủ nhà</span>
-          <span class="text-xs text-gray-400 mt-1">Đăng nhập ở tab LoAu</span>
         </div>
-        <p class="text-xs text-gray-400 mb-4">Dữ liệu được lưu ngay trên trình duyệt của thiết bị này. Muốn dùng trên máy khác: xuất file rồi nhập vào máy đó. Nên xuất sao lưu định kỳ.</p>
+        <p class="text-xs text-gray-400 mb-4">Dữ liệu được đồng bộ trên Firebase cho mọi máy. Vẫn nên xuất file sao lưu định kỳ. Nhập file sẽ thay toàn bộ dữ liệu trên cloud.</p>
         <div class="space-y-3">
           <button data-action="export" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-sm font-medium"><i class="fas fa-download mr-2"></i>Xuất file sao lưu (.json)</button>
           <label class="block w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-sm font-medium text-center cursor-pointer">
@@ -171,27 +180,17 @@
       </div>
     </section>
 
-    <!-- LOAU -->
+    <!-- TÀI KHOẢN (LoAu) -->
     <section id="sec-loau" class="tab-content hidden space-y-6">
       <div class="max-w-md mx-auto">
         <div class="glass-panel rounded-[2rem] p-8 mt-6 relative overflow-hidden">
           <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-pink-500"></div>
-          <div class="text-center mb-8">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4 border border-white/10"><i class="fas fa-shield-alt text-2xl text-pink-400"></i></div>
-            <h2 class="text-2xl font-bold mb-1">Cổng Chủ Nhà</h2>
-            <p class="text-gray-400 text-sm">Chỉ Admin mới được sửa/xóa số liệu, quản lý thành viên và chốt sổ.</p>
-          </div>
-          <form id="login-form" class="space-y-4" autocomplete="off">
-            <input type="text" id="login-username" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500" placeholder="Tên đăng nhập (admin)">
-            <input type="password" id="login-password" class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500" placeholder="Mật khẩu">
-            <p id="login-hint" class="text-xs text-amber-300/90 hidden">Lần đầu đăng nhập: mật khẩu bạn nhập (từ 4 ký tự) sẽ được đặt làm mật khẩu Chủ nhà.</p>
-            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-pink-500/25 active:scale-95">Khởi động quyền Chủ Nhà</button>
-          </form>
-          <div id="logged-in-state" class="hidden text-center space-y-4">
-            <div class="text-emerald-400"><i class="fas fa-check-circle text-4xl"></i></div>
-            <h3 class="text-xl font-bold">Đã cấp quyền Chủ Nhà</h3>
-            <p class="text-sm text-gray-400">Bạn có thể sửa/xóa khoản chi, quản lý thành viên, chốt sổ và sao lưu.</p>
-            <button data-action="logout" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm">Thoát chế độ</button>
+          <div id="logged-in-state" class="text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center mx-auto border border-white/10"><i class="fas fa-shield-alt text-2xl text-pink-400"></i></div>
+            <h3 id="acct-title" class="text-xl font-bold">Tài khoản</h3>
+            <p id="acct-email" class="text-sm text-pink-300 break-all"></p>
+            <p id="acct-desc" class="text-sm text-gray-400"></p>
+            <button data-action="logout" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm">Đăng xuất</button>
           </div>
         </div>
       </div>
@@ -255,7 +254,8 @@
 
 
 <!-- MODAL: bill nhiều món -->
-<input type="file" accept="image/*" id="scan-file" class="hidden">
+<input type="file" accept="image/*" capture="environment" id="scan-file" class="hidden">
+<input type="file" accept="image/*" id="scan-file-gallery" class="hidden">
 <div id="rc-modal" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-50 items-center justify-center p-2 md:p-4">
   <div class="glass-panel w-full max-w-2xl rounded-[2rem] p-5 relative modal-animate flex flex-col max-h-[96vh]">
     <button data-action="rc-close" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20"><i class="fas fa-times"></i></button>
@@ -307,6 +307,18 @@
   <img id="lightbox-img" class="max-w-full max-h-full rounded-xl" alt="Ảnh bill">
 </div>
 
+<!-- Cổng đăng nhập -->
+<div id="auth-gate" class="fixed inset-0 z-[90] items-center justify-center p-4" style="display:flex;background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%)">
+  <div class="glass-panel w-full max-w-sm rounded-[2rem] p-8 text-center space-y-4">
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-xl shadow-lg">H22</div>
+    <h2 class="text-xl font-bold">House 22</h2>
+    <p id="auth-msg" class="text-sm text-gray-400">Đang tải...</p>
+    <button id="auth-google" data-action="auth-google" class="hidden w-full bg-white text-gray-900 font-semibold py-3 rounded-xl active:scale-95"><i class="fab fa-google mr-2"></i>Đăng nhập bằng Google</button>
+    <button id="auth-claim" data-action="auth-claim" class="hidden w-full bg-gradient-to-r from-indigo-500 to-pink-500 font-bold py-3 rounded-xl active:scale-95">Tạo sổ & làm Chủ nhà</button>
+    <button id="auth-out" data-action="logout" class="hidden w-full bg-white/10 hover:bg-white/20 py-2 rounded-xl text-sm">Đăng xuất</button>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-black/90 text-white px-6 py-3 rounded-full text-sm font-medium z-[100] transition-all -translate-y-20 opacity-0 border border-white/10 shadow-xl flex items-center gap-2 pointer-events-none">
   <i class="fas fa-info-circle text-pink-400"></i><span id="toast-msg"></span>
@@ -339,8 +351,8 @@ function showToast(msg, isError = false) {
   toastTimer = setTimeout(() => t.classList.add('-translate-y-20', 'opacity-0'), isError ? 5000 : 3000);
 }
 
-/* ================= DỮ LIỆU ================= */
-const STORAGE_KEY = 'house22.data.v1';
+/* ================= DỮ LIỆU (đồng bộ Firebase) ================= */
+const STORAGE_KEY = 'house22.data.v1'; // chỉ dùng để chuyển dữ liệu cũ trên máy lên cloud
 const CATEGORIES = ['Cố định', 'Sinh hoạt', 'Mua sắm', 'Đi chơi', 'Phát sinh'];
 
 function seedData() {
@@ -354,37 +366,28 @@ function seedData() {
       mk('i3', 'Tiền internet', 195000, { m1: 97500, m2: 97500, m3: 0 }),
       mk('i4', 'Tiền ăn ở nhà', 4034000, { m1: 2017000, m2: 2017000, m3: 0 })
     ],
-    log: [], periods: [], pinHash: null
+    log: [], periods: []
   };
 }
 
-function loadData() {
+function localLegacy() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const d = JSON.parse(raw);
-      if (d && Array.isArray(d.members) && Array.isArray(d.items)) {
-        d.log = d.log || []; d.periods = d.periods || []; d.pinHash = d.pinHash || null;
-        d.hostId = d.hostId || (d.members[0] && d.members[0].id);
-        return d;
-      }
-    }
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (d && Array.isArray(d.members) && Array.isArray(d.items)) { d.hostId = d.hostId || (d.members[0] && d.members[0].id); d.periods = d.periods || []; return d; }
   } catch (e) {}
-  return seedData();
+  return null;
 }
 
-let state = loadData();
-let isAdmin = false;
-try { isAdmin = sessionStorage.getItem('house22.admin') === '1'; } catch (e) {}
-
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
-  catch (e) { showToast('Bộ nhớ trình duyệt đầy hoặc bị chặn — hãy xuất file sao lưu!', true); return false; }
-}
-
+let state = { members: [], items: [], log: [], periods: [], hostId: null, admins: [], allowed: [] };
+let isAdmin = false, authUser = null;
+let gemCache = { key: '', model: 'gemini-2.5-flash' };
+const FB = () => window.FBX;
+function fbErr(e) { console.error(e); showToast('Lỗi đồng bộ: ' + String((e && (e.code || e.message)) || e).slice(0, 110), true); }
+function saveMeta() { return FB().setMeta({ members: state.members, hostId: state.hostId || null, periods: state.periods }).catch(fbErr); }
+function save() { return saveMeta(); } // chỉ gọi ở các thao tác của Chủ nhà làm đổi thành viên / kỳ chốt
 function addLog(text, amount) {
-  state.log.unshift({ t: nowStr(), text, amount: amount ?? null });
-  if (state.log.length > 300) state.log.length = 300;
+  if (!FB()) return;
+  FB().addLog({ ts: Date.now(), t: nowStr(), text, amount: amount ?? null }).catch(fbErr);
 }
 
 const memberName = id => (state.members.find(m => m.id === id) || {}).name || '—';
@@ -445,7 +448,6 @@ function buildNav() {
   $('nav-mobile').innerHTML = TABS.map(t => `
     <button data-tab="${t.id}" class="nav-item relative flex-1 flex flex-col items-center justify-center py-2 rounded-full text-gray-400 transition-all">
       <i class="fas ${t.icon} text-base mb-0.5"></i><span class="text-[9px] font-medium">${t.label}</span>
-      ${t.id === 'loau' ? '<span id="loau-dot" class="absolute top-1.5 right-3 w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>' : ''}
     </button>`).join('');
 }
 
@@ -457,61 +459,103 @@ function switchTab(id) {
   document.querySelector('main').scrollTo({ top: 0 });
 }
 
-/* ================= XÁC THỰC CHỦ NHÀ ================= */
-async function hashPin(s) {
-  try {
-    if (window.crypto && crypto.subtle) {
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('h22:' + s));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-  } catch (e) {}
-  let h = 5381; const str = 'h22:' + s;
-  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
-  return 'x' + h;
-}
+/* ================= XÁC THỰC (Firebase Auth) ================= */
+function myEmail() { return authUser ? String(authUser.email || '').toLowerCase() : ''; }
+function logout() { if (FB()) FB().signOut(); }
 
-async function handleLogin(e) {
-  e.preventDefault();
-  const user = $('login-username').value.trim().toLowerCase();
-  const pwd = $('login-password').value;
-  if (user !== 'admin' && user !== 'chunha') return showToast('Tên đăng nhập không hợp lệ', true);
-  if (!state.pinHash) {
-    if (pwd.length < 4) return showToast('Lần đầu: hãy đặt mật khẩu từ 4 ký tự', true);
-    state.pinHash = await hashPin(pwd); save();
-  } else if (await hashPin(pwd) !== state.pinHash) {
-    return showToast('Sai mật khẩu', true);
-  }
-  isAdmin = true;
-  try { sessionStorage.setItem('house22.admin', '1'); } catch (e) {}
-  $('login-password').value = '';
-  applyRole(); renderAll();
-  showToast('Đã cấp quyền Chủ Nhà!');
-}
-
-function logout() {
-  isAdmin = false;
-  try { sessionStorage.removeItem('house22.admin'); } catch (e) {}
-  $('login-username').value = ''; $('login-password').value = '';
-  applyRole(); renderAll();
-  showToast('Đã thoát chế độ Chủ nhà');
+function setGate(st) {
+  $('auth-gate').style.display = st === 'ok' ? 'none' : 'flex';
+  const msgs = {
+    loading: 'Đang tải...',
+    signedout: 'Đăng nhập bằng Google để vào sổ chung của nhà.',
+    noconfig: 'Chưa có sổ nào. Tạo sổ mới và đặt ' + myEmail() + ' làm Chủ nhà? (dữ liệu cũ trên máy này, nếu có, sẽ được đưa lên)',
+    denied: 'Tài khoản ' + myEmail() + ' chưa được cấp quyền. Nhờ Chủ nhà thêm email này ở Cài Đặt rồi tải lại trang.'
+  };
+  if (msgs[st]) $('auth-msg').innerText = msgs[st];
+  $('auth-google').classList.toggle('hidden', st !== 'signedout');
+  $('auth-claim').classList.toggle('hidden', st !== 'noconfig');
+  $('auth-out').classList.toggle('hidden', !(st === 'noconfig' || st === 'denied'));
 }
 
 function applyRole() {
+  isAdmin = !!authUser && state.admins.includes(myEmail());
   document.body.classList.toggle('is-admin', isAdmin);
-  $('login-form').classList.toggle('hidden', isAdmin);
-  $('logged-in-state').classList.toggle('hidden', !isAdmin);
-  $('login-hint').classList.toggle('hidden', !!state.pinHash);
-  const dot = $('loau-dot'); if (dot) dot.classList.toggle('hidden', isAdmin);
-  $('role-desktop').innerText = isAdmin ? 'Chủ Nhà (Admin)' : 'Khách';
+  $('acct-email').innerText = myEmail();
+  $('acct-title').innerText = isAdmin ? 'Chủ Nhà (Admin)' : 'Thành viên';
+  $('acct-desc').innerText = isAdmin ? 'Bạn có thể sửa/xóa khoản chi, quản lý thành viên, chốt sổ và sao lưu.' : 'Bạn có thể xem sổ và thêm khoản chi.';
+  $('role-desktop').innerText = isAdmin ? 'Chủ Nhà (Admin)' : (authUser ? 'Thành viên' : 'Khách');
   $('role-desktop').className = 'text-sm font-medium truncate ' + (isAdmin ? 'text-pink-400' : 'text-white');
-  $('role-mobile').innerText = isAdmin ? 'Admin' : 'Khách';
+  $('role-mobile').innerText = isAdmin ? 'Admin' : (authUser ? 'Thành viên' : 'Khách');
   $('user-avatar-icon').className = isAdmin ? 'fas fa-crown text-xs text-pink-400' : 'fas fa-user text-xs text-gray-300';
   $('settings-lock').classList.toggle('hidden', isAdmin);
 }
 
+/* Quản lý email được vào */
+function renderAccess() {
+  const el = $('access-list'); if (!el) return;
+  const me = myEmail();
+  el.innerHTML = state.allowed.map(e => {
+    const adm = state.admins.includes(e);
+    return `<div class="flex items-center justify-between gap-2 bg-black/20 rounded-xl px-3 py-2 text-sm border border-white/5">
+      <span class="truncate min-w-0">${esc(e)} ${adm ? '<span class="text-[10px] text-pink-300">Chủ nhà</span>' : ''}</span>
+      ${e === me ? '<span class="text-[10px] text-gray-500 shrink-0">bạn</span>' : `<span class="shrink-0 flex items-center gap-1">
+        <button data-action="access-admin" data-id="${esc(e)}" class="chip">${adm ? 'Bỏ Chủ nhà' : 'Làm Chủ nhà'}</button>
+        <button data-action="access-del" data-id="${esc(e)}" class="text-gray-500 hover:text-pink-400 px-1"><i class="fas fa-times"></i></button></span>`}
+    </div>`;
+  }).join('');
+}
+function accessSave(admins, allowed) { return FB().setConfig({ admins, allowed }).catch(fbErr); }
+function accessAdd() {
+  if (!requireAdmin()) return;
+  const e = $('access-email').value.trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(e)) return showToast('Email không hợp lệ', true);
+  if (state.allowed.includes(e)) return showToast('Email này đã có', true);
+  accessSave(state.admins, [...state.allowed, e]); $('access-email').value = '';
+}
+function accessToggleAdmin(e) {
+  if (!requireAdmin() || e === myEmail()) return;
+  accessSave(state.admins.includes(e) ? state.admins.filter(x => x !== e) : [...state.admins, e], state.allowed);
+}
+function accessDel(e) {
+  if (!requireAdmin() || e === myEmail()) return;
+  accessSave(state.admins.filter(x => x !== e), state.allowed.filter(x => x !== e));
+}
+
+/* Cầu nối: module Firebase (cuối file) gọi các hàm này khi có dữ liệu */
+let gemLoaded = false;
+window.App = {
+  user(u) {
+    authUser = u; gemLoaded = false;
+    if (!u) { Object.assign(state, { members: [], items: [], log: [], periods: [], admins: [], allowed: [], hostId: null }); applyRole(); renderAll(); setGate('signedout'); }
+    else setGate('loading');
+  },
+  config(c) {
+    if (!c) { state.admins = []; state.allowed = []; applyRole(); return setGate('noconfig'); }
+    state.admins = (c.admins || []).map(e => String(e).toLowerCase());
+    state.allowed = (c.allowed || []).map(e => String(e).toLowerCase());
+    applyRole();
+    const ok = state.admins.includes(myEmail()) || state.allowed.includes(myEmail());
+    setGate(ok ? 'ok' : 'denied');
+    if (ok && isAdmin && !gemLoaded) {
+      gemLoaded = true;
+      FB().getKey().then(k => { gemCache = { key: k.key || '', model: k.model || 'gemini-2.5-flash' }; loadGemSettings(); }).catch(() => {});
+    }
+    renderAll();
+  },
+  data(d) {
+    if (!d) return;
+    state.members = d.members || []; state.periods = d.periods || [];
+    state.hostId = d.hostId || (state.members[0] && state.members[0].id) || null;
+    renderAll();
+  },
+  items(a) { state.items = a.sort((x, y) => (x.ts || 0) - (y.ts || 0)); renderAll(); },
+  log(a) { state.log = a; renderHistory(); },
+  error(e) { fbErr(e); }
+};
+
 /* ================= RENDER ================= */
 function renderAll() {
-  renderTable(); renderCards(); renderDebts(); renderHistory(); loadGemSettings();
+  renderTable(); renderCards(); renderDebts(); renderHistory(); loadGemSettings(); renderAccess();
 }
 
 function renderTable() {
@@ -612,13 +656,21 @@ function transferHtml(list) {
 function renderDebts() {
   const c = compute();
   $('transfers').innerHTML = transferHtml(computeTransfers(c.net));
-  $('periods').innerHTML = state.periods.length ? state.periods.map(p => `
-    <details class="bg-black/20 rounded-xl border border-white/5">
-      <summary class="px-4 py-3 cursor-pointer text-sm flex justify-between gap-2"><span class="font-medium">${esc(p.label)}</span><span class="text-gray-400 text-xs">${esc(p.closedAt)} • ${fmt(p.total)}</span></summary>
+  $('periods').innerHTML = state.periods.length ? state.periods.map(p => {
+    const left = p.transfers.filter(t => !t.paid).length;
+    const badge = !p.transfers.length ? '' : left
+      ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">${left} chưa chuyển</span>`
+      : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Đã xong ✓</span>';
+    return `<details class="bg-black/20 rounded-xl border border-white/5" ${left ? 'open' : ''}>
+      <summary class="px-4 py-3 cursor-pointer text-sm space-y-1"><div class="flex justify-between gap-2"><span class="font-medium">${esc(p.label)}</span>${badge}</div><div class="text-gray-400 text-xs">${esc(p.closedAt)} • ${fmt(p.total)}</div></summary>
       <div class="px-4 pb-4 space-y-2">
-        ${p.transfers.map(t => `<div class="flex justify-between text-xs"><span>${esc(t.from)} → ${esc(t.to)}</span><span class="font-mono text-emerald-300">${fmt(t.amount)}</span></div>`).join('') || '<p class="text-xs text-gray-500">Không có khoản chuyển nào</p>'}
+        ${p.transfers.map((t, ti) => `<div class="flex items-center justify-between gap-2 text-xs">
+          <span class="${t.paid ? 'line-through text-gray-500' : ''}">${esc(t.from)} → ${esc(t.to)}</span>
+          <span class="flex items-center gap-2 shrink-0"><span class="font-mono ${t.paid ? 'text-gray-500' : 'text-emerald-300'}">${fmt(t.amount)}</span>
+          <button data-action="toggle-paid" data-id="${esc(p.id)}" data-m="${ti}" class="chip ${t.paid ? 'on' : ''}" ${isAdmin ? '' : 'disabled'} title="${t.paid && t.paidAt ? esc(t.paidAt) : ''}">${t.paid ? 'Đã chuyển ✓' : 'Chưa chuyển'}</button></span></div>`).join('') || '<p class="text-xs text-gray-500">Không có khoản chuyển nào</p>'}
       </div>
-    </details>`).join('') : '<p class="text-sm text-gray-500">Chưa có kỳ nào được chốt</p>';
+    </details>`;
+  }).join('') : '<p class="text-sm text-gray-500">Chưa có kỳ nào được chốt</p>';
 }
 
 function renderHistory() {
@@ -741,12 +793,14 @@ function saveItem() {
   if (editingId) {
     const it = state.items.find(i => i.id === editingId);
     Object.assign(it, { name, amount, category, payerId, split, photo: draftPhoto });
+    FB().setItem(it).catch(fbErr);
     addLog(`Sửa: ${name}`, amount);
   } else {
-    state.items.push({ id: uid('i'), name, amount, category, payerId, split, photo: draftPhoto, createdAt: nowStr() });
+    const ni = { id: uid('i'), name, amount, category, payerId, split, photo: draftPhoto, createdAt: nowStr(), ts: Date.now() };
+    state.items.push(ni);
+    FB().setItem(ni).catch(fbErr);
     addLog(`Thêm: ${name}${payerId ? ' (' + memberName(payerId) + ' trả)' : ''}`, amount);
   }
-  save();
   $('item-modal').classList.remove('open');
   renderAll(); switchTab('quychung');
   showToast('Đã lưu & phân bổ chi phí!');
@@ -757,7 +811,7 @@ function deleteItem(id) {
   const it = state.items.find(i => i.id === id); if (!it) return;
   openDialog({ title: 'Xóa khoản chi?', msg: `"${it.name}" — ${fmt(it.amount)}`, okText: 'Xóa', cb: () => {
     state.items = state.items.filter(i => i.id !== id);
-    addLog(`Xóa: ${it.name}`, it.amount); save(); renderAll(); showToast('Đã xóa khoản chi');
+    addLog(`Xóa: ${it.name}`, it.amount); FB().delItem(id).catch(fbErr); renderAll(); showToast('Đã xóa khoản chi');
   }});
 }
 
@@ -770,7 +824,6 @@ function addMember() {
     if (state.members.some(m => m.name.toLowerCase() === name.toLowerCase())) return showToast('Tên đã tồn tại', true);
     const m = { id: uid('m'), name };
     state.members.push(m);
-    state.items.forEach(i => i.split[m.id] = 0);
     addLog(`Thêm thành viên: ${name}`); save(); renderAll(); showToast('Đã thêm ' + name);
   }});
 }
@@ -806,7 +859,8 @@ function removeMember(id) {
         rest.forEach(r => i.split[r] = (i.split[r] || 0) + add[r]);
       }
     });
-    addLog(`Xóa thành viên: ${m.name}`); save(); renderAll(); showToast('Đã xóa ' + m.name);
+    addLog(`Xóa thành viên: ${m.name}`);
+    FB().setItems(state.items).catch(fbErr); save(); renderAll(); showToast('Đã xóa ' + m.name);
   }});
 }
 
@@ -819,8 +873,9 @@ function closePeriod() {
     const c = compute();
     state.periods.unshift({
       id: uid('p'), label, closedAt: nowStr(), total: c.total,
-      transfers: computeTransfers(c.net).map(t => ({ from: memberName(t.from), to: t.to ? memberName(t.to) : 'Quỹ chung', amount: t.amount }))
+      transfers: computeTransfers(c.net).map(t => ({ from: memberName(t.from), to: t.to ? memberName(t.to) : 'Quỹ chung', amount: t.amount, paid: false, paidAt: null }))
     });
+    FB().delItems(state.items.filter(i => i.category !== 'Cố định').map(i => i.id)).catch(fbErr);
     state.items = state.items.filter(i => i.category === 'Cố định');
     addLog(`Chốt sổ: ${label}`, c.total); save(); renderAll(); showToast('Đã chốt sổ ' + label);
   }});
@@ -828,7 +883,7 @@ function closePeriod() {
 
 function exportData() {
   if (!requireAdmin()) return;
-  const copy = JSON.parse(JSON.stringify(state)); copy.pinHash = null; // không xuất mật khẩu
+  const copy = { v: 1, members: state.members, hostId: state.hostId, items: state.items, periods: state.periods, log: state.log };
   const blob = new Blob([JSON.stringify(copy, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -844,9 +899,10 @@ function importData(file) {
     try {
       const d = JSON.parse(r.result);
       if (!Array.isArray(d.members) || !Array.isArray(d.items) || !d.members.every(m => m.id && m.name)) throw 0;
-      openDialog({ title: 'Nhập dữ liệu?', msg: 'Toàn bộ dữ liệu hiện tại trên máy này sẽ bị thay thế.', okText: 'Nhập', cb: () => {
-        d.log = d.log || []; d.periods = d.periods || []; d.pinHash = state.pinHash; d.hostId = d.hostId || d.members[0].id;
-        state = d; addLog('Nhập dữ liệu từ file sao lưu'); save(); renderAll(); showToast('Đã nhập dữ liệu');
+      openDialog({ title: 'Nhập dữ liệu?', msg: 'Toàn bộ dữ liệu hiện tại trên cloud (mọi máy) sẽ bị thay thế.', okText: 'Nhập', cb: () => {
+        d.periods = d.periods || []; d.hostId = d.hostId || d.members[0].id;
+        setBusy(true, 'Đang đưa dữ liệu lên cloud...');
+        FB().replaceAll(d).then(() => { setBusy(false); addLog('Nhập dữ liệu từ file sao lưu'); showToast('Đã nhập dữ liệu'); }).catch(e => { setBusy(false); fbErr(e); });
       }});
     } catch (e) { showToast('File không hợp lệ', true); }
   };
@@ -855,8 +911,9 @@ function importData(file) {
 
 function resetAll() {
   if (!requireAdmin()) return;
-  openDialog({ title: 'Xóa toàn bộ dữ liệu?', msg: 'Không thể hoàn tác. Hãy xuất file sao lưu trước nếu cần.', okText: 'Xóa hết', cb: () => {
-    const pin = state.pinHash; state = seedData(); state.pinHash = pin; addLog('Đặt lại dữ liệu mẫu'); save(); renderAll(); showToast('Đã đặt lại dữ liệu');
+  openDialog({ title: 'Xóa toàn bộ dữ liệu?', msg: 'Không thể hoàn tác, ảnh hưởng mọi máy. Hãy xuất file sao lưu trước nếu cần.', okText: 'Xóa hết', cb: () => {
+    setBusy(true, 'Đang đặt lại...');
+    FB().replaceAll(seedData()).then(() => { setBusy(false); addLog('Đặt lại dữ liệu mẫu'); showToast('Đã đặt lại dữ liệu'); }).catch(e => { setBusy(false); fbErr(e); });
   }});
 }
 
@@ -888,7 +945,6 @@ document.addEventListener('click', e => {
   }
 });
 
-$('login-form').addEventListener('submit', handleLogin);
 $('im-mode').addEventListener('change', syncModeUI);
 $('im-amount').addEventListener('input', () => { if ($('im-mode').value === 'custom') updateRemain(); });
 $('im-custom').addEventListener('input', updateRemain);
@@ -904,14 +960,10 @@ document.addEventListener('keydown', e => {
 });
 
 /* ================= GEMINI + BILL NHIỀU MÓN ================= */
-const GEM_KEY = 'house22.gemini';
 const fileToThumb = f => fileToJpeg(f, 640, 0.6);
 const fmtDate = d => (d ? d.split('-').reverse().join('/') : '');
 
-function getGem() {
-  try { const g = JSON.parse(localStorage.getItem(GEM_KEY) || '{}'); return { key: g.key || '', model: g.model || 'gemini-2.5-flash' }; }
-  catch (e) { return { key: '', model: 'gemini-2.5-flash' }; }
-}
+function getGem() { return gemCache; }
 function loadGemSettings() {
   const g = getGem();
   if (document.activeElement !== $('gem-key')) $('gem-key').value = g.key;
@@ -920,10 +972,11 @@ function loadGemSettings() {
 }
 function saveGemSettings() {
   if (!requireAdmin()) return;
-  try { localStorage.setItem(GEM_KEY, JSON.stringify({ key: $('gem-key').value.trim(), model: $('gem-model').value.trim() || 'gemini-2.5-flash' })); }
-  catch (e) { return showToast('Không lưu được cài đặt', true); }
-  state.hostId = $('host-select').value; save();
-  showToast('Đã lưu cài đặt AI');
+  const g = { key: $('gem-key').value.trim(), model: $('gem-model').value.trim() || 'gemini-2.5-flash' };
+  FB().setKey(g)
+    .then(() => { gemCache = g; state.hostId = $('host-select').value; return saveMeta(); })
+    .then(() => showToast('Đã lưu cài đặt AI'))
+    .catch(fbErr);
 }
 
 async function scanWithGemini(dataUrl) {
@@ -1121,9 +1174,11 @@ function saveReceipt() {
     amount: total, category: 'Mua sắm', payerId: rc.payerId, split: splitLines(rc.lines),
     photo: rc.photo, lines: rc.lines, printedTotal: rc.printedTotal
   };
-  if (rc.itemId) { Object.assign(state.items.find(i => i.id === rc.itemId), data); addLog('Sửa bill: ' + data.name, total); }
-  else { state.items.push({ id: uid('i'), createdAt: nowStr(), ...data }); addLog('Thêm bill: ' + data.name + (rc.payerId ? ' (' + memberName(rc.payerId) + ' trả)' : ''), total); }
-  save(); $('rc-modal').classList.remove('open'); rc = null;
+  let it;
+  if (rc.itemId) { it = state.items.find(i => i.id === rc.itemId); Object.assign(it, data); addLog('Sửa bill: ' + data.name, total); }
+  else { it = { id: uid('i'), createdAt: nowStr(), ts: Date.now(), ...data }; state.items.push(it); addLog('Thêm bill: ' + data.name + (rc.payerId ? ' (' + memberName(rc.payerId) + ' trả)' : ''), total); }
+  FB().setItem(it).catch(fbErr);
+  $('rc-modal').classList.remove('open'); rc = null;
   renderAll(); switchTab('quychung'); showToast('Đã lưu bill & chia tiền!');
 }
 
@@ -1131,7 +1186,20 @@ function extraAction(a, id, el) {
   if (a.startsWith('rc-') && !['rc-close', 'rc-photo'].includes(a) && (!isAdmin || !rc)) return;
   const mAll = () => state.members.map(m => m.id);
   switch (a) {
+    case 'auth-google': FB().signIn().catch(fbErr); break;
+    case 'auth-claim': FB().claim(localLegacy() || seedData()).catch(fbErr); break;
+    case 'access-add': accessAdd(); break;
+    case 'access-admin': accessToggleAdmin(id); break;
+    case 'access-del': accessDel(id); break;
+    case 'toggle-paid': {
+      if (!requireAdmin()) break;
+      const p = state.periods.find(x => x.id === id), t = p && p.transfers[+el.dataset.m]; if (!t) break;
+      t.paid = !t.paid; t.paidAt = t.paid ? nowStr() : null;
+      addLog(`${t.paid ? 'Đã chuyển' : 'Hủy xác nhận chuyển'}: ${t.from} → ${t.to} (${p.label})`, t.amount);
+      save(); renderAll(); break;
+    }
     case 'scan-bill': $('scan-file').click(); break;
+    case 'scan-gallery': $('scan-file-gallery').click(); break;
     case 'view-receipt': { const it = state.items.find(i => i.id === id); if (it) openReceiptFromItem(it); break; }
     case 'rc-close': rcClose(); break;
     case 'rc-photo': if (rc && rc.photo) { $('lightbox-img').src = rc.photo; $('lightbox').classList.add('open'); } break;
@@ -1178,7 +1246,7 @@ $('rc-lines').addEventListener('change', e => {
   renderReceiptLines();
 });
 $('rc-payer').addEventListener('change', e => { if (rc) { rc.payerId = e.target.value || null; renderReceiptSummary(); } });
-$('scan-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleScanFile(f); });
+['scan-file', 'scan-file-gallery'].forEach(i => $(i).addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleScanFile(f); }));
 
 /* ================= ĐỒNG HỒ ================= */
 function updateClock() {
@@ -1189,7 +1257,94 @@ function updateClock() {
 setInterval(updateClock, 1000); updateClock();
 
 /* ================= KHỞI TẠO ================= */
-buildNav(); applyRole(); renderAll(); switchTab('quychung');
+buildNav(); applyRole(); renderAll(); switchTab('quychung'); setGate('loading');
+</script>
+
+<!-- ================= FIREBASE ================= -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, setDoc, getDoc, getDocs,
+  deleteDoc, onSnapshot, query, orderBy, limit, writeBatch }
+  from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+/* >>> DÁN firebaseConfig CỦA BẠN VÀO ĐÂY (Firebase Console → Project settings → Your apps → Web) <<< */
+const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  appId: ""
+};
+
+if (!firebaseConfig.projectId) {
+  document.getElementById('auth-msg').innerText = 'Chưa dán firebaseConfig vào file (tìm chữ "firebaseConfig" ở cuối file index.html).';
+} else {
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+  const clean = o => JSON.parse(JSON.stringify(o)); // Firestore không nhận undefined
+  const cfgRef = doc(db, 'meta', 'config'), dataRef = doc(db, 'meta', 'data'), keyRef = doc(db, 'private', 'gemini');
+  const itemsCol = collection(db, 'items'), logCol = collection(db, 'log');
+
+  async function chunked(list, size, fn) {
+    for (let i = 0; i < list.length; i += size) { const b = writeBatch(db); list.slice(i, i + size).forEach(x => fn(b, x)); await b.commit(); }
+  }
+  const setItems = arr => chunked(arr, 40, (b, i) => b.set(doc(itemsCol, i.id), clean(i))); // 40 để không vượt giới hạn dung lượng mỗi lần ghi
+  const delItems = ids => chunked(ids, 200, (b, id) => b.delete(doc(itemsCol, id)));
+
+  async function replaceAll(d) {
+    const old = await getDocs(itemsCol), keep = new Set(d.items.map(i => i.id));
+    await delItems(old.docs.map(x => x.id).filter(id => !keep.has(id)));
+    const t = Date.now(); d.items.forEach((i, k) => { i.ts = i.ts || t + k; });
+    await setItems(d.items);
+    await setDoc(dataRef, clean({ members: d.members, hostId: d.hostId || null, periods: d.periods || [] }));
+  }
+
+  window.FBX = {
+    signIn: async () => {
+      const p = new GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
+      try { await signInWithPopup(auth, p); }
+      catch (e) { if (e.code === 'auth/popup-blocked') await signInWithRedirect(auth, p); else if (e.code !== 'auth/popup-closed-by-user') throw e; }
+    },
+    signOut: () => signOut(auth),
+    setMeta: m => setDoc(dataRef, clean(m)),
+    setItem: it => setDoc(doc(itemsCol, it.id), clean(it)),
+    delItem: id => deleteDoc(doc(itemsCol, id)),
+    setItems, delItems, replaceAll,
+    addLog: l => setDoc(doc(logCol, 'l' + l.ts + Math.random().toString(36).slice(2, 6)), clean(l)),
+    setConfig: c => setDoc(cfgRef, clean(c)),
+    getKey: async () => { const s = await getDoc(keyRef); return s.exists() ? s.data() : {}; },
+    setKey: k => setDoc(keyRef, clean(k)),
+    claim: async seed => {
+      const e = auth.currentUser.email.toLowerCase();
+      await setDoc(cfgRef, { admins: [e], allowed: [e] });
+      await replaceAll(seed);
+    }
+  };
+
+  let unCfg = null, unData = [], dataOn = false;
+  const stopData = () => { unData.forEach(u => u()); unData = []; dataOn = false; };
+  const startData = () => {
+    if (dataOn) return; dataOn = true;
+    unData.push(onSnapshot(dataRef, s => App.data(s.exists() ? s.data() : null), e => App.error(e)));
+    unData.push(onSnapshot(itemsCol, s => App.items(s.docs.map(d => d.data())), e => App.error(e)));
+    unData.push(onSnapshot(query(logCol, orderBy('ts', 'desc'), limit(150)), s => App.log(s.docs.map(d => d.data())), e => App.error(e)));
+  };
+
+  onAuthStateChanged(auth, user => {
+    if (unCfg) { unCfg(); unCfg = null; } stopData();
+    App.user(user);
+    if (!user) return;
+    const em = user.email.toLowerCase();
+    unCfg = onSnapshot(cfgRef, s => {
+      const c = s.exists() ? s.data() : null;
+      App.config(c);
+      const ok = c && ((c.admins || []).concat(c.allowed || [])).map(x => String(x).toLowerCase()).includes(em);
+      if (ok) startData(); else stopData();
+    }, e => App.error(e));
+  });
+}
 </script>
 </body>
 </html>
