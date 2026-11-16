@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House 22</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22 font-family=%22sans-serif%22 font-weight=%22bold%22 fill=%22%23818cf8%22>H22</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-24 lg:pb-0 lg:flex overflow-x-hidden">
+
+    <!-- Desktop Sidebar & Mobile Bottom Nav -->
+    <nav class="fixed bottom-4 left-4 right-4 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:w-72 lg:h-screen z-50">
+        <div class="glass-panel rounded-[2rem] lg:rounded-none lg:rounded-r-[3rem] h-full p-4 lg:p-8 flex lg:flex-col items-center lg:items-start justify-between lg:justify-start shadow-2xl">
+            <div class="hidden lg:flex items-center gap-3 mb-12 w-full">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-xl shadow-lg">H22</div>
+                <h1 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-400">House 22</h1>
+            </div>
+
+            <div class="flex lg:flex-col w-full gap-2 lg:gap-4 overflow-x-auto hide-scrollbar">
+                <button onclick="switchTab('quychung')" id="nav-quychung" class="nav-btn flex-1 lg:flex-none flex lg:items-center flex-col lg:flex-row gap-1 lg:gap-3 p-3 rounded-2xl bg-white/10 text-indigo-300 font-semibold transition-all">
+                    <svg class="w-6 h-6 mx-auto lg:mx-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-[10px] lg:text-base">Quỹ Chung</span>
+                </button>
+                <button onclick="switchTab('canhan')" id="nav-canhan" class="nav-btn flex-1 lg:flex-none flex lg:items-center flex-col lg:flex-row gap-1 lg:gap-3 p-3 rounded-2xl hover:bg-white/5 text-gray-400 hover:text-white transition-all">
+                    <svg class="w-6 h-6 mx-auto lg:mx-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span class="text-[10px] lg:text-base">Cá Nhân</span>
+                </button>
+                <button onclick="switchTab('congno')" id="nav-congno" class="nav-btn flex-1 lg:flex-none flex lg:items-center flex-col lg:flex-row gap-1 lg:gap-3 p-3 rounded-2xl hover:bg-white/5 text-gray-400 hover:text-white transition-all">
+                    <svg class="w-6 h-6 mx-auto lg:mx-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <span class="text-[10px] lg:text-base">Công Nợ</span>
+                </button>
+                <button onclick="switchTab('lichsu')" id="nav-lichsu" class="nav-btn flex-1 lg:flex-none flex lg:items-center flex-col lg:flex-row gap-1 lg:gap-3 p-3 rounded-2xl hover:bg-white/5 text-gray-400 hover:text-white transition-all">
+                    <svg class="w-6 h-6 mx-auto lg:mx-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-[10px] lg:text-base">Lịch Sử</span>
+                </button>
+                <button onclick="switchTab('loau')" id="nav-loau" class="nav-btn flex-1 lg:flex-none flex lg:items-center flex-col lg:flex-row gap-1 lg:gap-3 p-3 rounded-2xl hover:bg-white/5 text-gray-400 hover:text-white transition-all">
+                    <svg class="w-6 h-6 mx-auto lg:mx-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <span class="text-[10px] lg:text-base">LoAu</span>
+                </button>
+                <button onclick="switchTab('caidat')" id="nav-caidat" class="nav-btn flex-1 lg:flex-none flex lg:items-center flex-col lg:flex-row gap-1 lg:gap-3 p-3 rounded-2xl hover:bg-white/5 text-gray-400 hover:text-white transition-all">
+                    <svg class="w-6 h-6 mx-auto lg:mx-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span class="text-[10px] lg:text-base">Cài Đặt</span>
+                </button>
+            </div>
+            
+            <div id="admin-badge" class="hidden mt-auto w-full lg:flex items-center gap-2 p-3 rounded-2xl bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                Admin Active
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 lg:p-12 w-full max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-8 lg:hidden">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-lg shadow-lg">H22</div>
+                <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-400">House 22</h1>
+            </div>
+        </header>
+
+        <!-- Tab: Quỹ Chung -->
+        <section id="tab-quychung" class="tab-content active">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-white mb-2">Quỹ Chung</h2>
+                    <p class="text-slate-400">Tổng quan chi phí sinh hoạt gia đình</p>
+                </div>
+                <button onclick="openScanModal()" class="bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all transform hover:scale-105 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    📸 Quét Bill Mới
+                </button>
+            </div>
+
+            <div class="glass-panel rounded-[2rem] p-1 overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-white/5 text-slate-300" id="quychung-thead">
+                            <!-- Injected by JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="quychung-tbody" class="divide-y divide-white/10">
+                        <!-- Injected by JS -->
+                    </tbody>
+                    <tfoot id="quychung-tfoot" class="divide-y divide-white/10">
+                        <!-- Injected by JS -->
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tab: Cá Nhân -->
+        <section id="tab-canhan" class="tab-content">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-white mb-2">Cá Nhân</h2>
+                    <p class="text-slate-400">Chi tiết Thu - Chi từng thành viên</p>
+                </div>
+                <button id="btn-add-member" onclick="addMember()" class="hidden bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-4 rounded-xl border border-white/10 transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Thêm Member
+                </button>
+            </div>
+            
+            <div id="canhan-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+        <!-- Tab: Công Nợ -->
+        <section id="tab-congno" class="tab-content">
+            <h2 class="text-3xl font-extrabold text-white mb-8">Công Nợ</h2>
+            <div class="glass-panel rounded-[2rem] p-8 text-center text-slate-400">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <p>Hệ thống tự động cấn trừ công nợ đang được phát triển.</p>
+                <p class="mt-2 text-sm">Vui lòng xem chi tiết Thu/Chi tại tab Cá Nhân.</p>
+            </div>
+        </section>
+
+        <!-- Tab: Lịch Sử -->
+        <section id="tab-lichsu" class="tab-content">
+            <h2 class="text-3xl font-extrabold text-white mb-8">Lịch Sử Bills</h2>
+            <div id="lichsu-container" class="space-y-4">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+        <!-- Tab: LoAu (Phân Quyền) -->
+        <section id="tab-loau" class="tab-content">
+            <div class="max-w-md mx-auto mt-12">
+                <div class="glass-panel rounded-[2.5rem] p-8 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-pink-500"></div>
+                    <div class="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">LoAu - Quản Lý</h2>
+                    <p class="text-slate-400 mb-8 text-sm">Đăng nhập tài khoản Admin (nhập 'admin') để cấp quyền chỉnh sửa, chia tiền và thêm member.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <input type="text" id="login-username" placeholder="Username" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-transparent peer focus:outline-none focus:border-indigo-500 transition-colors">
+                            <label class="absolute left-5 -top-2.5 text-xs text-indigo-300 bg-slate-900/80 px-1 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-slate-500 peer-placeholder-shown:top-4 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-indigo-300">Username</label>
+                        </div>
+                        <button onclick="handleLogin()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-indigo-500/25">
+                            Kích hoạt Quyền
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Cài Đặt -->
+        <section id="tab-caidat" class="tab-content">
+            <h2 class="text-3xl font-extrabold text-white mb-8">Cài Đặt</h2>
+            <div class="space-y-4">
+                <div class="glass-panel rounded-[2rem] p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Giao diện tối (Dark Mode)</h3>
+                        <p class="text-slate-400 text-sm">Mặc định bật để bảo vệ mắt</p>
+                    </div>
+                    <div class="w-12 h-6 bg-indigo-500 rounded-full relative cursor-pointer">
+                        <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                    </div>
+                </div>
+                
+                <div class="glass-panel rounded-[2rem] p-6 flex items-center justify-between opacity-40 cursor-not-allowed relative group">
+                    <div>
+                        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                            Đồng bộ Cloud
+                        </h3>
+                        <p class="text-slate-400 text-sm">Tự động sao lưu dữ liệu lên máy chủ</p>
+                    </div>
+                    <div class="w-12 h-6 bg-slate-700 rounded-full relative">
+                        <div class="absolute left-1 top-1 w-4 h-4 bg-slate-400 rounded-full"></div>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center hidden group-hover:flex backdrop-blur-sm rounded-[2rem]">
+                        <span class="bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">Tính năng Premium</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Scan Bill -->
+    <div id="scan-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0" id="scan-modal-content">
+            <div class="p-6 text-white">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Thêm Bill Mới</h3>
+                    <button onclick="closeScanModal()" class="text-gray-400 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                
+                <div id="scan-step-1" class="border-2 border-dashed border-indigo-500/50 rounded-3xl p-8 text-center cursor-pointer hover:bg-indigo-500/10 transition-colors" onclick="simulateScan()">
+                    <svg class="w-16 h-16 text-indigo-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                    <p class="font-semibold">Chạm để chụp / Tải ảnh lên</p>
+                    <p class="text-xs text-slate-400 mt-2">Hệ thống AI sẽ tự động đọc dữ liệu</p>
+                </div>
+
+                <div id="scan-loading" class="hidden py-12 text-center">
+                    <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="text-indigo-300 font-semibold animate-pulse">AI đang phân tích bill...</p>
+                </div>
+
+                <div id="scan-step-2" class="hidden space-y-4">
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Tên khoản chi</label>
+                        <input type="text" id="bill-name" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500" placeholder="VD: Bữa tối, Tiền điện...">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 mb-1 block">Tổng tiền (VNĐ)</label>
+                        <input type="number" id="bill-amount" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 font-bold text-lg" placeholder="0">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Danh mục</label>
+                            <select id="bill-category" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                                <option value="Sinh hoạt">Sinh hoạt</option>
+                                <option value="Đi chơi">Đi chơi</option>
+                                <option value="Phát sinh">Phát sinh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Ai đã trả tiền?</label>
+                            <select id="bill-payer" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                                <!-- JS Injected -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-white/10 pt-4 mt-2">
+                        <label class="text-xs text-slate-400 mb-2 block">Ai chia khoản này? (Share with)</label>
+                        <select id="bill-share-mode" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white mb-2 focus:outline-none focus:border-indigo-500" onchange="toggleCustomShare()">
+                            <option value="all">Tất cả mọi người (Cả nhà)</option>
+                            <option value="custom">Tùy chọn thành viên...</option>
+                        </select>
+                        
+                        <div id="custom-share-list" class="hidden bg-white/5 rounded-xl p-3 space-y-2 max-h-32 overflow-y-auto hide-scrollbar">
+                            <!-- JS Injected checkboxes -->
+                        </div>
+                    </div>
+
+                    <button onclick="saveBill()" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-bold py-4 rounded-xl mt-4 shadow-lg shadow-indigo-500/25">
+                        Xác nhận & Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Split Modal (Admin) -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+         <div class="bg-slate-900 border border-white/10 rounded-[2.5rem] w-full max-w-md p-6 shadow-2xl">
+             <h3 class="text-xl font-bold text-white mb-4">Chỉnh sửa chia tiền</h3>
+             <p class="text-slate-400 text-sm mb-4" id="edit-bill-name"></p>
+             <div id="edit-shares-container" class="space-y-3 mb-6">
+                 <!-- JS Injected -->
+             </div>
+             <div class="flex gap-3">
+                 <button onclick="closeEditModal()" class="flex-1 bg-white/10 text-white py-3 rounded-xl">Hủy</button>
+                 <button onclick="saveEdit()" class="flex-1 bg-indigo-500 text-white py-3 rounded-xl font-bold">Lưu thay đổi</button>
+             </div>
+         </div>
+    </div>
+
+    <script>
+        // Override native modals to avoid blocking the collaborative UI sandbox
+        const showToast = (msg) => {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-10 left-1/2 transform -translate-x-1/2 z-[200] bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-2xl transition-all duration-300';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+        window.alert = (msg) => showToast(msg);
+        window.confirm = (msg) => true;
+        window.prompt = (msg) => "Thành viên Mới " + Math.floor(Math.random() * 999);
+
+        // --- State Management ---
+        const appData = {
+            members: [
+                { id: 'm1', name: 'Nghĩa' },
+                { id: 'm2', name: 'Hòa' },
+                { id: 'm3', name: 'Trí' }
+            ],
+            bills: [
+                { id: 'b1', name: 'Tiền thuê nhà', amount: 8000000, category: 'Sinh hoạt', paidBy: 'm1', shares: { 'm1': 7000000, 'm2': 0, 'm3': 1000000 }, date: new Date().toISOString() },
+                { id: 'b2', name: 'Tiền điện', amount: 1118000, category: 'Sinh hoạt', paidBy: 'm2', shares: { 'm1': 559000, 'm2': 559000, 'm3': 0 }, date: new Date().toISOString() },
+                { id: 'b3', name: 'Tiền internet', amount: 195000, category: 'Sinh hoạt', paidBy: 'm2', shares: { 'm1': 97500, 'm2': 97500, 'm3': 0 }, date: new Date().toISOString() },
+                { id: 'b4', name: 'Tiền ăn ở nhà', amount: 4034000, category: 'Sinh hoạt', paidBy: 'm3', shares: { 'm1': 2017000, 'm2': 2017000, 'm3': 0 }, date: new Date().toISOString() }
+            ],
+            isAdmin: false,
+            editingBillId: null
+        };
+
+        const formatMoney = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+        // --- Core UI Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-white/10', 'text-indigo-300');
+                el.classList.add('text-gray-400');
+            });
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const btn = document.getElementById(`nav-${tabId}`);
+            btn.classList.add('bg-white/10', 'text-indigo-300');
+            btn.classList.remove('text-gray-400');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('login-username').value;
+            if (user.toLowerCase() === 'admin') {
+                appData.isAdmin = true;
+                document.getElementById('admin-badge').classList.remove('hidden');
+                document.getElementById('btn-add-member').classList.remove('hidden');
+                alert('Đã cấp quyền Admin!');
+                renderAll();
+                switchTab('quychung');
+            } else {
+                alert('Sai username!');
+            }
+        }
+
+        // --- Render Logic ---
+        function renderAll() {
+            renderQuyChung();
+            renderCaNhan();
+            renderLichSu();
+            updateSelectOptions();
+        }
+
+        function renderQuyChung() {
+            const thead = document.getElementById('quychung-thead');
+            const tbody = document.getElementById('quychung-tbody');
+            const tfoot = document.getElementById('quychung-tfoot');
+
+            // Header
+            let thHtml = `<th class="p-4 font-semibold w-48">Các mục</th><th class="p-4 font-semibold text-right">Tổng</th>`;
+            appData.members.forEach(m => {
+                thHtml += `<th class="p-4 font-semibold text-right">${m.name}</th>`;
+            });
+            if (appData.isAdmin) thHtml += `<th class="p-4 font-semibold text-center">Tool</th>`;
+            thead.innerHTML = thHtml;
+
+            // Compute Totals
+            let totalAll = 0;
+            let totalShare = {};
+            let totalPaid = {};
+            
+            appData.members.forEach(m => {
+                totalShare[m.id] = 0;
+                totalPaid[m.id] = 0;
+            });
+
+            // Rows
+            let trHtml = '';
+            appData.bills.forEach(bill => {
+                totalAll += bill.amount;
+                if(totalPaid[bill.paidBy] !== undefined) totalPaid[bill.paidBy] += bill.amount;
+
+                trHtml += `<tr class="hover:bg-white/5 transition-colors">
+                    <td class="p-4 border-b border-white/5 text-slate-300">${bill.name}</td>
+                    <td class="p-4 border-b border-white/5 text-right font-bold text-white">${formatMoney(bill.amount)}</td>`;
+                
+                appData.members.forEach(m => {
+                    let share = bill.shares[m.id] || 0;
+                    totalShare[m.id] += share;
+                    trHtml += `<td class="p-4 border-b border-white/5 text-right text-slate-400">${formatMoney(share)}</td>`;
+                });
+
+                if (appData.isAdmin) {
+                    trHtml += `<td class="p-4 border-b border-white/5 text-center">
+                        <button onclick="openEditModal('${bill.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2">✏️</button>
+                        <button onclick="deleteBill('${bill.id}')" class="text-pink-400 hover:text-pink-300">🗑️</button>
+                    </td>`;
+                }
+                trHtml += `</tr>`;
+            });
+            tbody.innerHTML = trHtml;
+
+            // Footer (Tổng, Đã Chi, Cần Thu)
+            let rowTong = `<tr class="bg-white/10 font-bold border-t border-white/20"><td class="p-4">Tổng phải đóng</td><td class="p-4 text-right text-white">${formatMoney(totalAll)}</td>`;
+            let rowDaChi = `<tr class="bg-indigo-500/10 font-semibold"><td class="p-4">Đã chi (trả trước)</td><td class="p-4 text-right text-indigo-300">${formatMoney(Object.values(totalPaid).reduce((a,b)=>a+b,0))}</td>`;
+            let rowBalance = `<tr class="bg-slate-800 font-bold"><td class="p-4">Cần thu / (Cần nộp)</td><td class="p-4 text-right">-</td>`;
+
+            appData.members.forEach(m => {
+                let share = totalShare[m.id] || 0;
+                let paid = totalPaid[m.id] || 0;
+                let balance = paid - share;
+
+                rowTong += `<td class="p-4 text-right text-white">${formatMoney(share)}</td>`;
+                rowDaChi += `<td class="p-4 text-right text-indigo-300">${formatMoney(paid)}</td>`;
+                
+                if (balance > 0) {
+                    rowBalance += `<td class="p-4 text-right text-emerald-400 text-sm">Thu: ${formatMoney(balance)}</td>`;
+                } else if (balance < 0) {
+                    rowBalance += `<td class="p-4 text-right text-pink-400 text-sm">Nộp: ${formatMoney(Math.abs(balance))}</td>`;
+                } else {
+                    rowBalance += `<td class="p-4 text-right text-gray-500">0 đ</td>`;
+                }
+            });
+            
+            if (appData.isAdmin) {
+                rowTong += `<td></td>`;
+                rowDaChi += `<td></td>`;
+                rowBalance += `<td></td>`;
+            }
+
+            tfoot.innerHTML = rowTong + rowDaChi + rowBalance;
+        }
+
+        function renderCaNhan() {
+            const container = document.getElementById('canhan-container');
+            let html = '';
+            
+            appData.members.forEach(m => {
+                let billsPaidByMe = appData.bills.filter(b => b.paidBy === m.id);
+                
+                // Bảng Chi
+                let bangChiHtml = billsPaidByMe.map(b => `
+                    <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl mb-2">
+                        <div>
+                            <p class="text-sm text-slate-200">${b.name}</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-wider">${b.category}</p>
+                        </div>
+                        <span class="text-pink-400 font-bold text-sm">${formatMoney(b.amount)}</span>
+                    </div>
+                `).join('');
+                if(!bangChiHtml) bangChiHtml = '<div class="text-slate-500 text-sm italic py-2">Chưa trả trước khoản nào.</div>';
+
+                // Bảng Thu
+                let bangThuHtml = billsPaidByMe.map(b => {
+                    let myShare = b.shares[m.id] || 0;
+                    let amountToCollect = b.amount - myShare;
+                    if(amountToCollect <= 0) return '';
+                    return `
+                    <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl mb-2 border border-emerald-500/20">
+                        <span class="text-sm text-slate-200">Từ bill: ${b.name}</span>
+                        <span class="text-emerald-400 font-bold text-sm">+${formatMoney(amountToCollect)}</span>
+                    </div>
+                    `;
+                }).join('');
+                if(!bangThuHtml.trim()) bangThuHtml = '<div class="text-slate-500 text-sm italic py-2">Không có khoản cần thu lại.</div>';
+
+                html += `
+                <div class="glass-panel rounded-[2rem] p-6 relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-indigo-500/20 to-pink-500/20 rounded-full blur-2xl"></div>
+                    <div class="flex items-center gap-4 mb-6 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-slate-800 border-2 border-indigo-500 flex items-center justify-center font-bold text-indigo-300">
+                            ${m.name.charAt(0)}
+                        </div>
+                        <h3 class="text-xl font-bold text-white">${m.name}</h3>
+                    </div>
+
+                    <div class="mb-6 relative z-10">
+                        <h4 class="text-xs font-extrabold text-pink-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                            Bảng Chi (Đã trả trước)
+                        </h4>
+                        <div>${bangChiHtml}</div>
+                    </div>
+
+                    <div class="relative z-10">
+                        <h4 class="text-xs font-extrabold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            Bảng Thu (Cần thu lại)
+                        </h4>
+                        <div>${bangThuHtml}</div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderLichSu() {
+            const container = document.getElementById('lichsu-container');
+            let html = '';
+            [...appData.bills].reverse().forEach(b => {
+                let payerName = appData.members.find(m => m.id === b.paidBy)?.name || 'Unknown';
+                html += `
+                <div class="glass-panel rounded-2xl p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-xl">
+                            ${b.category === 'Sinh hoạt' ? '🏠' : b.category === 'Đi chơi' ? '🍿' : '📦'}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white">${b.name}</h4>
+                            <p class="text-xs text-slate-400">${payerName} đã thanh toán • ${new Date(b.date).toLocaleDateString('vi-VN')}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-pink-400">${formatMoney(b.amount)}</p>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html || '<p class="text-slate-400 text-center py-8">Chưa có lịch sử giao dịch.</p>';
+        }
+
+        // --- Scan Logic ---
+        function openScanModal() {
+            document.getElementById('scan-modal').classList.remove('hidden');
+            document.getElementById('scan-modal').classList.add('flex');
+            setTimeout(() => {
+                const content = document.getElementById('scan-modal-content');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            
+            document.getElementById('scan-step-1').classList.remove('hidden');
+            document.getElementById('scan-loading').classList.add('hidden');
+            document.getElementById('scan-step-2').classList.add('hidden');
+            
+            // Reset form
+            document.getElementById('bill-name').value = '';
+            document.getElementById('bill-amount').value = '';
+            document.getElementById('bill-share-mode').value = 'all';
+            toggleCustomShare();
+        }
+
+        function closeScanModal() {
+            const content = document.getElementById('scan-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                document.getElementById('scan-modal').classList.add('hidden');
+                document.getElementById('scan-modal').classList.remove('flex');
+            }, 200);
+        }
+
+        function simulateScan() {
+            document.getElementById('scan-step-1').classList.add('hidden');
+            document.getElementById('scan-loading').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('scan-loading').classList.add('hidden');
+                document.getElementById('scan-step-2').classList.remove('hidden');
+                document.getElementById('bill-amount').value = Math.floor(Math.random() * 50 + 10) * 10000;
+                document.getElementById('bill-name').value = "Hóa đơn siêu thị";
+            }, 1500);
+        }
+
+        function updateSelectOptions() {
+            const payerSelect = document.getElementById('bill-payer');
+            const shareList = document.getElementById('custom-share-list');
+            
+            payerSelect.innerHTML = appData.members.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+            
+            shareList.innerHTML = appData.members.map(m => `
+                <label class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer">
+                    <input type="checkbox" value="${m.id}" class="share-checkbox w-4 h-4 rounded border-gray-600 text-indigo-500 focus:ring-indigo-500 bg-slate-800" checked>
+                    <span class="text-sm text-slate-300">${m.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function toggleCustomShare() {
+            const mode = document.getElementById('bill-share-mode').value;
+            const list = document.getElementById('custom-share-list');
+            if(mode === 'custom') {
+                list.classList.remove('hidden');
+            } else {
+                list.classList.add('hidden');
+            }
+        }
+
+        function saveBill() {
+            const name = document.getElementById('bill-name').value || 'Khoản chi mới';
+            const amount = parseInt(document.getElementById('bill-amount').value) || 0;
+            const category = document.getElementById('bill-category').value;
+            const paidBy = document.getElementById('bill-payer').value;
+            const shareMode = document.getElementById('bill-share-mode').value;
+            
+            if (amount <= 0) { alert('Vui lòng nhập số tiền hợp lệ'); return; }
+
+            let selectedMembers = [];
+            if (shareMode === 'all') {
+                selectedMembers = appData.members.map(m => m.id);
+            } else {
+                document.querySelectorAll('.share-checkbox:checked').forEach(cb => {
+                    selectedMembers.push(cb.value);
+                });
+            }
+
+            if(selectedMembers.length === 0) { alert('Phải chọn ít nhất 1 người để chia!'); return; }
+
+            let splitAmount = amount / selectedMembers.length;
+            let shares = {};
+            appData.members.forEach(m => {
+                shares[m.id] = selectedMembers.includes(m.id) ? splitAmount : 0;
+            });
+
+            const newBill = {
+                id: 'b' + Date.now(),
+                name, amount, category, paidBy, shares,
+                date: new Date().toISOString()
+            };
+
+            appData.bills.push(newBill);
+            closeScanModal();
+            renderAll();
+        }
+
+        // --- Admin Logic ---
+        function addMember() {
+            const name = prompt("Nhập tên thành viên mới:");
+            if (name && name.trim()) {
+                const newId = 'm' + Date.now();
+                appData.members.push({ id: newId, name: name.trim() });
+                // Update existings bills share for this new member (default 0)
+                appData.bills.forEach(b => b.shares[newId] = 0);
+                renderAll();
+            }
+        }
+
+        function deleteBill(id) {
+            if(confirm("Chắc chắn xóa khoản này?")) {
+                appData.bills = appData.bills.filter(b => b.id !== id);
+                renderAll();
+            }
+        }
+
+        function openEditModal(id) {
+            const bill = appData.bills.find(b => b.id === id);
+            appData.editingBillId = id;
+            document.getElementById('edit-bill-name').innerText = `Tổng: ${formatMoney(bill.amount)}`;
+            
+            const container = document.getElementById('edit-shares-container');
+            container.innerHTML = appData.members.map(m => `
+                <div class="flex items-center justify-between">
+                    <label class="text-sm text-slate-300 w-24">${m.name}</label>
+                    <input type="number" id="edit-share-${m.id}" value="${bill.shares[m.id] || 0}" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+            `).join('');
+            
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-modal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('flex');
+        }
+
+        function saveEdit() {
+            const bill = appData.bills.find(b => b.id === appData.editingBillId);
+            let checkTotal = 0;
+            appData.members.forEach(m => {
+                let val = parseInt(document.getElementById(`edit-share-${m.id}`).value) || 0;
+                bill.shares[m.id] = val;
+                checkTotal += val;
+            });
+            
+            if(checkTotal !== bill.amount) {
+                alert(`Cảnh báo: Tổng chia (${formatMoney(checkTotal)}) đang khác tổng Bill (${formatMoney(bill.amount)}). Hệ thống đã lưu nhưng hãy kiểm tra lại!`);
+            }
+            
+            closeEditModal();
+            renderAll();
+        }
+
+        // Init
+        renderAll();
+    </script>
+</body>
+</html>
