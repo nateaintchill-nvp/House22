@@ -34,6 +34,9 @@
   body.is-admin .admin-only { display: revert; }
   .modal { display: none; }
   .modal.open { display: flex; }
+  .chip { padding: .3rem .7rem; border-radius: 9999px; font-size: .75rem; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: #cbd5e1; }
+  .chip.on { background: linear-gradient(135deg,#6366f1,#ec4899); color: #fff; border-color: transparent; }
+  .chip:disabled { opacity: .6; }
   select option { background: #1e1b4b; color: #fff; }
   input[type=number]::-webkit-inner-spin-button { opacity: .3; }
 </style>
@@ -81,6 +84,7 @@
           <p class="text-gray-400 text-sm mt-1">Tổng hợp và chia sẻ chi phí gia đình</p>
         </div>
         <div class="flex gap-2 w-full md:w-auto">
+          <button data-action="scan-bill" class="admin-only flex-1 md:flex-none text-center bg-gradient-to-r from-pink-500 to-indigo-500 hover:opacity-90 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-pink-500/25 active:scale-95"><i class="fas fa-camera mr-2"></i>Quét bill (AI)</button>
           <button data-action="add-item" class="flex-1 md:flex-none bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-pink-500/25 transition-all active:scale-95 flex items-center justify-center gap-2">
             <i class="fas fa-plus text-lg"></i><span>Thêm khoản chi</span>
           </button>
@@ -136,6 +140,18 @@
     <!-- CÀI ĐẶT -->
     <section id="sec-caidat" class="tab-content hidden space-y-6">
       <h2 class="text-2xl font-bold">Cài Đặt Hệ Thống</h2>
+      <div class="admin-only glass-panel rounded-[2rem] p-6 max-w-xl space-y-4">
+        <h3 class="font-semibold text-indigo-300 border-b border-white/10 pb-2">AI đọc bill (Gemini)</h3>
+        <p class="text-xs text-gray-400">Lấy API key tại aistudio.google.com/apikey. Key chỉ lưu trên thiết bị này, không nằm trong file sao lưu. Ảnh bill sẽ được gửi tới Google để đọc.</p>
+        <div><label class="block text-xs text-gray-400 mb-1">Gemini API key</label>
+          <input id="gem-key" type="password" autocomplete="off" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm font-mono focus:outline-none focus:border-indigo-500"></div>
+        <div><label class="block text-xs text-gray-400 mb-1">Model</label>
+          <input id="gem-model" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm font-mono focus:outline-none focus:border-indigo-500">
+          <p class="text-[10px] text-gray-500 mt-1">Nếu báo lỗi model không tồn tại, đổi sang tên model Gemini mới hơn có hỗ trợ ảnh.</p></div>
+        <div><label class="block text-xs text-gray-400 mb-1">Chủ nhà (người trả mặc định khi quét bill)</label>
+          <select id="host-select" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none"></select></div>
+        <button data-action="save-gem" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 py-2 rounded-xl text-sm font-semibold">Lưu cài đặt AI</button>
+      </div>
       <div class="glass-panel rounded-[2rem] p-6 relative overflow-hidden max-w-xl">
         <h3 class="font-semibold text-pink-300 mb-4 border-b border-white/10 pb-2">Sao lưu & chuyển dữ liệu</h3>
         <div id="settings-lock" class="absolute inset-0 bg-gray-900/60 backdrop-blur-md z-10 flex flex-col items-center justify-center rounded-[2rem]">
@@ -237,6 +253,42 @@
   </div>
 </div>
 
+
+<!-- MODAL: bill nhiều món -->
+<input type="file" accept="image/*" id="scan-file" class="hidden">
+<div id="rc-modal" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-50 items-center justify-center p-2 md:p-4">
+  <div class="glass-panel w-full max-w-2xl rounded-[2rem] p-5 relative modal-animate flex flex-col max-h-[96vh]">
+    <button data-action="rc-close" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20"><i class="fas fa-times"></i></button>
+    <h3 id="rc-title" class="text-xl font-bold mb-3 pr-10">Bill</h3>
+    <div class="overflow-y-auto pr-1 flex-1 space-y-4">
+      <div class="flex gap-3 items-start">
+        <img id="rc-photo" data-action="rc-photo" class="hidden w-16 h-16 rounded-lg object-cover cursor-pointer" alt="Ảnh bill">
+        <div class="flex-1 space-y-2">
+          <input id="rc-name" maxlength="60" placeholder="Tên cửa hàng / buổi mua sắm" class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+          <div class="grid grid-cols-2 gap-2">
+            <input id="rc-date" type="date" class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none">
+            <select id="rc-payer" class="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none"></select>
+          </div>
+        </div>
+      </div>
+      <div id="rc-bulk"></div>
+      <div id="rc-lines" class="space-y-2"></div>
+      <div id="rc-actions" class="flex gap-2">
+        <button data-action="rc-add-item" class="chip"><i class="fas fa-plus mr-1"></i>Thêm món</button>
+        <button data-action="rc-add-adjust" class="chip"><i class="fas fa-plus mr-1"></i>Giảm giá / thuế / phí</button>
+      </div>
+      <div id="rc-adjs" class="space-y-2"></div>
+      <div id="rc-summary"></div>
+    </div>
+    <div id="rc-footer" class="pt-3 mt-2 border-t border-white/10">
+      <button data-action="rc-save" class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-bold py-3 rounded-xl active:scale-95">Lưu bill & chia tiền</button>
+    </div>
+  </div>
+</div>
+<div id="busy" class="modal fixed inset-0 bg-black/80 z-[80] items-center justify-center">
+  <div class="glass-panel rounded-2xl p-6 text-center"><i class="fas fa-circle-notch fa-spin text-3xl text-pink-400 mb-3"></i><p id="busy-msg" class="text-sm"></p></div>
+</div>
+
 <!-- MODAL: dialog chung -->
 <div id="dialog" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] items-center justify-center p-4">
   <div class="glass-panel w-full max-w-sm rounded-[2rem] p-6 modal-animate space-y-4">
@@ -284,18 +336,18 @@ function showToast(msg, isError = false) {
   t.querySelector('i').className = isError ? 'fas fa-exclamation-triangle text-red-500' : 'fas fa-check-circle text-emerald-400';
   t.classList.remove('-translate-y-20', 'opacity-0');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.add('-translate-y-20', 'opacity-0'), 3000);
+  toastTimer = setTimeout(() => t.classList.add('-translate-y-20', 'opacity-0'), isError ? 5000 : 3000);
 }
 
 /* ================= DỮ LIỆU ================= */
 const STORAGE_KEY = 'house22.data.v1';
-const CATEGORIES = ['Cố định', 'Sinh hoạt', 'Đi chơi', 'Phát sinh'];
+const CATEGORIES = ['Cố định', 'Sinh hoạt', 'Mua sắm', 'Đi chơi', 'Phát sinh'];
 
 function seedData() {
   const members = [{ id: 'm1', name: 'Nghĩa' }, { id: 'm2', name: 'Hòa' }, { id: 'm3', name: 'Trí' }];
   const mk = (id, name, amount, split) => ({ id, name, amount, category: 'Cố định', payerId: null, split, photo: null, createdAt: nowStr() });
   return {
-    v: 1, members,
+    v: 1, members, hostId: 'm1',
     items: [
       mk('i1', 'Tiền thuê nhà', 8000000, { m1: 7000000, m2: 0, m3: 1000000 }),
       mk('i2', 'Tiền điện', 1118000, { m1: 559000, m2: 559000, m3: 0 }),
@@ -313,6 +365,7 @@ function loadData() {
       const d = JSON.parse(raw);
       if (d && Array.isArray(d.members) && Array.isArray(d.items)) {
         d.log = d.log || []; d.periods = d.periods || []; d.pinHash = d.pinHash || null;
+        d.hostId = d.hostId || (d.members[0] && d.members[0].id);
         return d;
       }
     }
@@ -456,10 +509,9 @@ function applyRole() {
   $('settings-lock').classList.toggle('hidden', isAdmin);
 }
 
-
 /* ================= RENDER ================= */
 function renderAll() {
-  renderTable(); renderCards(); renderDebts(); renderHistory();
+  renderTable(); renderCards(); renderDebts(); renderHistory(); loadGemSettings();
 }
 
 function renderTable() {
@@ -481,7 +533,7 @@ function renderTable() {
       const payer = it.payerId ? `${esc(memberName(it.payerId))} trả` : 'Chưa ai ứng';
       return `<tr class="hover:bg-white/5">
         <td class="px-4 py-3 min-w-[160px]">
-          <div class="font-medium">${esc(it.name)}${it.photo ? ` <button data-action="view-photo" data-id="${it.id}" class="text-indigo-300 ml-1"><i class="fas fa-image"></i></button>` : ''}</div>
+          <div class="font-medium">${esc(it.name)}${it.lines ? ` <button data-action="view-receipt" data-id="${it.id}" class="text-pink-300 ml-1" title="Xem chi tiết bill"><i class="fas fa-list-ul"></i></button>` : ''}${it.photo ? ` <button data-action="view-photo" data-id="${it.id}" class="text-indigo-300 ml-1"><i class="fas fa-image"></i></button>` : ''}</div>
           <div class="text-[10px] text-gray-500">${esc(it.category)} • ${payer}</div>
         </td>
         <td class="px-4 py-3 text-right text-indigo-300 font-mono">${fmt(it.amount)}</td>${cells}
@@ -595,6 +647,7 @@ function openItemModal(id) {
   if (id && !requireAdmin()) return;
   editingId = id || null;
   const it = id ? state.items.find(i => i.id === id) : null;
+  if (it && it.lines) { openReceiptFromItem(it); return; }
   $('im-title').innerText = it ? 'Sửa khoản chi' : 'Ghi nhận chi phí';
   $('im-name').value = it ? it.name : '';
   $('im-amount').value = it ? it.amount : '';
@@ -602,7 +655,7 @@ function openItemModal(id) {
   $('im-category').innerHTML = cats.map(c => `<option ${it && it.category === c ? 'selected' : ''}>${c}</option>`).join('');
   $('im-payer').innerHTML = `<option value="">Chưa ai ứng (quỹ chung)</option>` +
     state.members.map(m => `<option value="${m.id}" ${it && it.payerId === m.id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
-  if (!it && state.members.length) $('im-payer').value = state.members[0].id;
+  if (!it && state.members.length) $('im-payer').value = state.hostId || state.members[0].id;
 
   // Xác định chế độ chia
   let mode = 'equal', checked = state.members.map(m => m.id);
@@ -648,15 +701,15 @@ function updatePhotoUI() {
   else { prev.classList.add('hidden'); $('im-photo-label').innerText = 'Chụp hoặc chọn ảnh bill'; $('im-photo-remove').classList.add('hidden'); }
 }
 
-function fileToThumb(file) {
+function fileToJpeg(file, max, q) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file), img = new Image();
     img.onload = () => {
-      const max = 640, k = Math.min(1, max / Math.max(img.width, img.height));
+      const k = Math.min(1, max / Math.max(img.width, img.height));
       const cv = document.createElement('canvas');
       cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
       cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-      URL.revokeObjectURL(url); resolve(cv.toDataURL('image/jpeg', 0.6));
+      URL.revokeObjectURL(url); resolve(cv.toDataURL('image/jpeg', q));
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(); };
     img.src = url;
@@ -737,11 +790,16 @@ function removeMember(id) {
   if (!requireAdmin()) return;
   const m = state.members.find(x => x.id === id);
   if (state.members.length <= 1) return showToast('Phải còn ít nhất 1 thành viên', true);
+  if (id === state.hostId) return showToast('Người này đang là Chủ nhà (người trả mặc định) — đổi ở Cài Đặt trước', true);
   if (state.items.some(i => i.payerId === id)) return showToast(`${m.name} đang là người ứng tiền ở một số khoản — hãy sửa/xóa các khoản đó trước`, true);
   openDialog({ title: `Xóa ${m.name}?`, msg: 'Phần tiền của người này ở từng khoản sẽ được chia đều lại cho các thành viên còn lại để tổng không bị lệch.', okText: 'Xóa', cb: () => {
     state.members = state.members.filter(x => x.id !== id);
     const rest = state.members.map(x => x.id);
     state.items.forEach(i => {
+      if (i.lines) {
+        i.lines.forEach(l => { l.sharers = (l.sharers || []).filter(s => s !== id); if (!l.sharers.length && l.type === 'item') l.sharers = [...rest]; });
+        i.split = splitLines(i.lines); return;
+      }
       const removed = i.split[id] || 0; delete i.split[id];
       if (removed > 0) {
         const add = splitEqual(removed, rest);
@@ -787,7 +845,7 @@ function importData(file) {
       const d = JSON.parse(r.result);
       if (!Array.isArray(d.members) || !Array.isArray(d.items) || !d.members.every(m => m.id && m.name)) throw 0;
       openDialog({ title: 'Nhập dữ liệu?', msg: 'Toàn bộ dữ liệu hiện tại trên máy này sẽ bị thay thế.', okText: 'Nhập', cb: () => {
-        d.log = d.log || []; d.periods = d.periods || []; d.pinHash = state.pinHash;
+        d.log = d.log || []; d.periods = d.periods || []; d.pinHash = state.pinHash; d.hostId = d.hostId || d.members[0].id;
         state = d; addLog('Nhập dữ liệu từ file sao lưu'); save(); renderAll(); showToast('Đã nhập dữ liệu');
       }});
     } catch (e) { showToast('File không hợp lệ', true); }
@@ -826,6 +884,7 @@ document.addEventListener('click', e => {
     case 'logout': logout(); break;
     case 'dlg-cancel': closeDialog(); break;
     case 'dlg-ok': { const cb = dlgCb, v = $('dlg-input').value; closeDialog(); if (cb) cb(v); break; }
+    default: extraAction(el.dataset.action, id, el);
   }
 });
 
@@ -843,6 +902,283 @@ $('dlg-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('dlg-
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { $('item-modal').classList.remove('open'); $('lightbox').classList.remove('open'); closeDialog(); }
 });
+
+/* ================= GEMINI + BILL NHIỀU MÓN ================= */
+const GEM_KEY = 'house22.gemini';
+const fileToThumb = f => fileToJpeg(f, 640, 0.6);
+const fmtDate = d => (d ? d.split('-').reverse().join('/') : '');
+
+function getGem() {
+  try { const g = JSON.parse(localStorage.getItem(GEM_KEY) || '{}'); return { key: g.key || '', model: g.model || 'gemini-2.5-flash' }; }
+  catch (e) { return { key: '', model: 'gemini-2.5-flash' }; }
+}
+function loadGemSettings() {
+  const g = getGem();
+  if (document.activeElement !== $('gem-key')) $('gem-key').value = g.key;
+  if (document.activeElement !== $('gem-model')) $('gem-model').value = g.model;
+  $('host-select').innerHTML = state.members.map(m => `<option value="${m.id}" ${m.id === state.hostId ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
+}
+function saveGemSettings() {
+  if (!requireAdmin()) return;
+  try { localStorage.setItem(GEM_KEY, JSON.stringify({ key: $('gem-key').value.trim(), model: $('gem-model').value.trim() || 'gemini-2.5-flash' })); }
+  catch (e) { return showToast('Không lưu được cài đặt', true); }
+  state.hostId = $('host-select').value; save();
+  showToast('Đã lưu cài đặt AI');
+}
+
+async function scanWithGemini(dataUrl) {
+  const g = getGem();
+  if (!g.key) throw new Error('Chưa nhập Gemini API key (Cài Đặt)');
+  const prompt = 'Bạn là công cụ đọc hóa đơn (bill) tại Việt Nam. Đọc ảnh và trả về JSON đúng schema. Quy tắc: ' +
+    '1) Tiền là VND, số nguyên, không có dấu chấm/phẩy (ví dụ "45.000" → 45000). ' +
+    '2) items: mỗi món một dòng, giữ nguyên tên trên bill; line_total là THÀNH TIỀN của dòng đó (đã nhân số lượng), không phải đơn giá. ' +
+    '3) adjustments: giảm giá/khuyến mãi (số ÂM), VAT/phí dịch vụ/phí giao hàng (số DƯƠNG) khi bill ghi riêng thành dòng; KHÔNG đưa dòng tổng cộng, tiền khách đưa, tiền thối vào đây. ' +
+    '4) printed_total: số tiền cuối cùng khách phải trả theo bill. ' +
+    '5) Không bịa món; nếu không đọc được thì để mảng rỗng và printed_total = 0. ' +
+    '6) date dạng YYYY-MM-DD nếu thấy, nếu không để chuỗi rỗng.';
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: dataUrl.split(',')[1] } }] }],
+    generationConfig: {
+      temperature: 0, responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'OBJECT',
+        properties: {
+          store_name: { type: 'STRING' }, date: { type: 'STRING' }, printed_total: { type: 'NUMBER' },
+          items: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, quantity: { type: 'NUMBER' }, line_total: { type: 'NUMBER' } }, required: ['name', 'line_total'] } },
+          adjustments: { type: 'ARRAY', items: { type: 'OBJECT', properties: { label: { type: 'STRING' }, amount: { type: 'NUMBER' } }, required: ['label', 'amount'] } }
+        },
+        required: ['items', 'printed_total']
+      }
+    }
+  };
+  const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 60000);
+  let res;
+  try {
+    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(g.model)}:generateContent`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': g.key }, body: JSON.stringify(body), signal: ctrl.signal
+    });
+  } catch (e) { throw new Error(e.name === 'AbortError' ? 'AI trả lời quá lâu (quá 60 giây)' : 'Không kết nối được tới Gemini (kiểm tra mạng)'); }
+  finally { clearTimeout(to); }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((data && data.error && data.error.message) || ('Lỗi Gemini ' + res.status));
+  const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+  const text = parts ? parts.map(p => p.text || '').join('') : '';
+  if (!text) throw new Error('Gemini không trả kết quả (bill có thể quá mờ hoặc bị chặn)');
+  try { return JSON.parse(text); } catch (e) { throw new Error('Gemini trả dữ liệu không đọc được'); }
+}
+
+function draftFromScan(j, photo) {
+  const ids = state.members.map(m => m.id), lines = [];
+  (j.items || []).forEach(it => {
+    const amt = Math.round(Number(it.line_total) || 0);
+    if (!it.name && !amt) return;
+    lines.push({ id: uid('l'), type: 'item', name: String(it.name || 'Món').slice(0, 80), qty: Number(it.quantity) || 1, amount: amt, sharers: [...ids] });
+  });
+  (j.adjustments || []).forEach(a => {
+    const amt = Math.round(Number(a.amount) || 0);
+    if (!amt) return;
+    lines.push({ id: uid('l'), type: 'adjust', name: String(a.label || 'Điều chỉnh').slice(0, 80), qty: 1, amount: amt, sharers: [] });
+  });
+  return { itemId: null, name: String(j.store_name || '').slice(0, 60), date: j.date || '', payerId: state.hostId, photo, lines, printedTotal: Math.round(Number(j.printed_total) || 0) };
+}
+
+function setBusy(on, msg) { $('busy').classList.toggle('open', on); if (msg) $('busy-msg').innerText = msg; }
+
+async function handleScanFile(file) {
+  if (!requireAdmin()) return;
+  if (!getGem().key) { showToast('Hãy nhập Gemini API key ở Cài Đặt trước', true); switchTab('caidat'); return; }
+  setBusy(true, 'AI đang đọc bill...');
+  let big, photo;
+  try { big = await fileToJpeg(file, 1600, 0.85); photo = await fileToJpeg(file, 640, 0.6); }
+  catch (e) { setBusy(false); return showToast('Không đọc được ảnh', true); }
+  try {
+    const j = await scanWithGemini(big);
+    setBusy(false);
+    const d = draftFromScan(j, photo);
+    if (!d.lines.length) showToast('AI không đọc được món nào — bạn nhập tay nhé', true);
+    openReceipt(d);
+  } catch (e) {
+    setBusy(false);
+    showToast(String(e.message || e).slice(0, 140), true);
+    openReceipt({ itemId: null, name: '', date: '', payerId: state.hostId, photo, lines: [], printedTotal: 0 });
+  }
+}
+
+/* Chia tiền theo từng dòng: món chia đều cho người được chọn; giảm giá/thuế/phí chia theo tỷ lệ tiền mỗi người */
+function splitLines(lines) {
+  const ids = state.members.map(m => m.id), shares = {};
+  ids.forEach(i => shares[i] = 0);
+  lines.filter(l => l.type === 'item').forEach(l => {
+    let sh = (l.sharers || []).filter(s => ids.includes(s)); if (!sh.length) sh = ids;
+    const p = splitEqual(Math.round(l.amount) || 0, sh);
+    sh.forEach(s => shares[s] += p[s]);
+  });
+  const A = lines.filter(l => l.type === 'adjust').reduce((s, l) => s + (Math.round(l.amount) || 0), 0);
+  if (A !== 0 && ids.length) {
+    const W = ids.reduce((s, i) => s + Math.max(0, shares[i]), 0);
+    const w = W > 0 ? ids.map(i => Math.max(0, shares[i])) : ids.map(() => 1);
+    const WW = w.reduce((a, b) => a + b, 0);
+    const raw = w.map(x => A * x / WW), fl = raw.map(Math.floor);
+    let rem = A - fl.reduce((a, b) => a + b, 0);
+    raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(o => { if (rem > 0) { fl[o[1]] += 1; rem--; } });
+    ids.forEach((id, i) => shares[id] += fl[i]);
+  }
+  return shares;
+}
+
+let rc = null; const rcSel = new Set();
+const rcLine = id => rc && rc.lines.find(l => l.id === id);
+
+function openReceiptFromItem(it) {
+  openReceipt({ itemId: it.id, name: it.store || '', date: it.date || '', payerId: it.payerId, photo: it.photo, lines: JSON.parse(JSON.stringify(it.lines)), printedTotal: it.printedTotal || 0 });
+}
+
+function openReceipt(d) {
+  rc = d; rcSel.clear();
+  const ro = !isAdmin, ids = state.members.map(m => m.id);
+  rc.lines.forEach(l => { l.sharers = (l.sharers || []).filter(s => ids.includes(s)); if (!l.sharers.length && l.type === 'item') l.sharers = [...ids]; });
+  $('rc-title').innerText = ro ? 'Chi tiết bill' : (rc.itemId ? 'Sửa bill' : 'Kiểm tra bill rồi phân chia');
+  $('rc-name').value = rc.name || '';
+  $('rc-date').value = /^\d{4}-\d{2}-\d{2}$/.test(rc.date || '') ? rc.date : '';
+  $('rc-payer').innerHTML = '<option value="">Chưa ai ứng (quỹ chung)</option>' + state.members.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  $('rc-payer').value = rc.payerId || '';
+  ['rc-name', 'rc-date', 'rc-payer'].forEach(i => $(i).disabled = ro);
+  const ph = $('rc-photo');
+  if (rc.photo) { ph.src = rc.photo; ph.classList.remove('hidden'); } else ph.classList.add('hidden');
+  $('rc-actions').classList.toggle('hidden', ro);
+  $('rc-footer').classList.toggle('hidden', ro);
+  $('rc-modal').classList.add('open');
+  renderReceiptLines();
+}
+
+function renderReceiptLines() {
+  const ro = !isAdmin, mem = state.members;
+  const items = rc.lines.filter(l => l.type === 'item'), adjs = rc.lines.filter(l => l.type === 'adjust');
+  const dis = ro ? 'disabled' : '';
+  const chips = l => {
+    const all = l.sharers.length === mem.length;
+    return `<button class="chip ${all ? 'on' : ''}" data-action="rc-all" data-id="${l.id}" ${dis}>Cả nhà</button>` +
+      mem.map(m => `<button class="chip ${!all && l.sharers.includes(m.id) ? 'on' : ''}" data-action="rc-toggle" data-id="${l.id}" data-m="${m.id}" ${dis}>${esc(m.name)}</button>`).join('');
+  };
+  $('rc-bulk').innerHTML = (ro || !items.length) ? '' : `
+    <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
+      <div class="flex items-center justify-between text-xs text-gray-300">
+        <span>Tick nhiều món rồi gán một lần (đang chọn ${rcSel.size})</span>
+        <button class="chip" data-action="rc-selall">Chọn / bỏ tất cả</button>
+      </div>
+      <div class="flex flex-wrap gap-1.5"><button class="chip" data-action="rc-bulk" data-m="all">Cả nhà</button>
+        ${mem.map(m => `<button class="chip" data-action="rc-bulk" data-m="${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    </div>`;
+  $('rc-lines').innerHTML = items.length ? items.map(l => `
+    <div class="bg-black/20 border border-white/5 rounded-xl p-3 space-y-2">
+      <div class="flex items-center gap-2">
+        ${ro ? '' : `<input type="checkbox" class="rc-sel accent-pink-500" data-id="${l.id}" ${rcSel.has(l.id) ? 'checked' : ''}>`}
+        <input data-line="${l.id}" data-field="name" value="${esc(l.name)}" placeholder="Tên món" ${dis} class="flex-1 min-w-0 bg-transparent border-b border-white/10 text-sm px-1 py-1 focus:outline-none focus:border-indigo-500">
+        <input data-line="${l.id}" data-field="amount" type="number" inputmode="numeric" value="${l.amount || ''}" placeholder="0" ${dis} class="w-28 text-right bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-sm font-mono focus:outline-none focus:border-indigo-500">
+        ${ro ? '' : `<button data-action="rc-del" data-id="${l.id}" class="text-gray-500 hover:text-pink-400 px-1"><i class="fas fa-trash-alt text-xs"></i></button>`}
+      </div>
+      ${l.qty > 1 ? `<p class="text-[10px] text-gray-500">Số lượng: ${l.qty}</p>` : ''}
+      <div class="flex flex-wrap gap-1.5">${chips(l)}</div>
+    </div>`).join('') : '<p class="text-sm text-gray-500 text-center py-4">Chưa có món nào</p>';
+  $('rc-adjs').innerHTML = adjs.length ? `<h4 class="text-xs font-semibold text-amber-300 uppercase tracking-wider">Giảm giá / thuế / phí <span class="normal-case font-normal text-gray-400">— chia theo tỷ lệ tiền mỗi người</span></h4>` +
+    adjs.map(l => `
+      <div class="flex items-center gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl p-3">
+        <input data-line="${l.id}" data-field="name" value="${esc(l.name)}" ${dis} class="flex-1 min-w-0 bg-transparent border-b border-white/10 text-sm px-1 py-1 focus:outline-none">
+        <input data-line="${l.id}" data-field="amount" type="number" inputmode="numeric" value="${l.amount || ''}" placeholder="âm = giảm" ${dis} class="w-28 text-right bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-sm font-mono focus:outline-none">
+        ${ro ? '' : `<button data-action="rc-del" data-id="${l.id}" class="text-gray-500 hover:text-pink-400 px-1"><i class="fas fa-trash-alt text-xs"></i></button>`}
+      </div>`).join('') : '';
+  renderReceiptSummary();
+}
+
+function renderReceiptSummary() {
+  const shares = splitLines(rc.lines), total = rc.lines.reduce((s, l) => s + (Math.round(l.amount) || 0), 0), payer = rc.payerId;
+  const rows = state.members.map(m => `<div class="flex justify-between text-sm"><span>${esc(m.name)}${payer && payer !== m.id && shares[m.id] > 0 ? ` <span class="text-[10px] text-gray-500">(nợ ${esc(memberName(payer))})</span>` : ''}</span><span class="font-mono">${fmt(shares[m.id])}</span></div>`).join('');
+  const p = rc.printedTotal; let note = '';
+  if (p > 0) note = p === total ? '<p class="text-xs text-emerald-400">Khớp tổng trên bill ✓</p>'
+    : `<p class="text-xs text-amber-300">Tổng các dòng (${fmt(total)}) khác tổng in trên bill (${fmt(p)}), lệch ${fmt(total - p)}. Kiểm tra lại món hoặc thêm dòng giảm giá/phí.</p>`;
+  $('rc-summary').innerHTML = `<div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-3 space-y-1">
+    <div class="flex justify-between font-bold"><span>Tổng bill</span><span class="font-mono">${fmt(total)}</span></div>
+    <p class="text-[10px] uppercase tracking-wider text-indigo-300 pt-1">Mỗi người chịu</p>${rows}${note}</div>`;
+}
+
+function rcClose() {
+  const close = () => { $('rc-modal').classList.remove('open'); rc = null; };
+  if (!isAdmin) return close();
+  openDialog({ title: 'Đóng bill?', msg: 'Các thay đổi chưa lưu sẽ mất.', okText: 'Đóng', cb: close });
+}
+
+function saveReceipt() {
+  if (!requireAdmin()) return;
+  const items = rc.lines.filter(l => l.type === 'item');
+  if (!items.length) return showToast('Bill chưa có món nào', true);
+  if (items.some(l => !Math.round(l.amount))) return showToast('Có món chưa nhập số tiền', true);
+  rc.lines.forEach(l => { if (!String(l.name).trim()) l.name = l.type === 'item' ? 'Món' : 'Điều chỉnh'; });
+  const total = rc.lines.reduce((s, l) => s + (Math.round(l.amount) || 0), 0);
+  if (total <= 0) return showToast('Tổng bill phải lớn hơn 0', true);
+  rc.name = $('rc-name').value.trim(); rc.date = $('rc-date').value; rc.payerId = $('rc-payer').value || null;
+  const data = {
+    name: (rc.name || 'Bill') + (rc.date ? ' • ' + fmtDate(rc.date) : ''), store: rc.name, date: rc.date,
+    amount: total, category: 'Mua sắm', payerId: rc.payerId, split: splitLines(rc.lines),
+    photo: rc.photo, lines: rc.lines, printedTotal: rc.printedTotal
+  };
+  if (rc.itemId) { Object.assign(state.items.find(i => i.id === rc.itemId), data); addLog('Sửa bill: ' + data.name, total); }
+  else { state.items.push({ id: uid('i'), createdAt: nowStr(), ...data }); addLog('Thêm bill: ' + data.name + (rc.payerId ? ' (' + memberName(rc.payerId) + ' trả)' : ''), total); }
+  save(); $('rc-modal').classList.remove('open'); rc = null;
+  renderAll(); switchTab('quychung'); showToast('Đã lưu bill & chia tiền!');
+}
+
+function extraAction(a, id, el) {
+  if (a.startsWith('rc-') && !['rc-close', 'rc-photo'].includes(a) && (!isAdmin || !rc)) return;
+  const mAll = () => state.members.map(m => m.id);
+  switch (a) {
+    case 'scan-bill': $('scan-file').click(); break;
+    case 'view-receipt': { const it = state.items.find(i => i.id === id); if (it) openReceiptFromItem(it); break; }
+    case 'rc-close': rcClose(); break;
+    case 'rc-photo': if (rc && rc.photo) { $('lightbox-img').src = rc.photo; $('lightbox').classList.add('open'); } break;
+    case 'rc-all': { const l = rcLine(id); if (l) { l.sharers = mAll(); renderReceiptLines(); } break; }
+    case 'rc-toggle': {
+      const l = rcLine(id), m = el.dataset.m; if (!l) break;
+      if (l.sharers.length === state.members.length) l.sharers = [m];
+      else { const i = l.sharers.indexOf(m); if (i >= 0) { if (l.sharers.length > 1) l.sharers.splice(i, 1); } else l.sharers.push(m); }
+      renderReceiptLines(); break;
+    }
+    case 'rc-del': rc.lines = rc.lines.filter(l => l.id !== id); rcSel.delete(id); renderReceiptLines(); break;
+    case 'rc-add-item': {
+      rc.lines.push({ id: uid('l'), type: 'item', name: '', qty: 1, amount: 0, sharers: mAll() }); renderReceiptLines();
+      const ins = $('rc-lines').querySelectorAll('[data-field="name"]'); if (ins.length) ins[ins.length - 1].focus(); break;
+    }
+    case 'rc-add-adjust': rc.lines.push({ id: uid('l'), type: 'adjust', name: 'Giảm giá', qty: 1, amount: 0, sharers: [] }); renderReceiptLines(); break;
+    case 'rc-selall': {
+      const items = rc.lines.filter(l => l.type === 'item');
+      if (rcSel.size === items.length) rcSel.clear(); else items.forEach(l => rcSel.add(l.id));
+      renderReceiptLines(); break;
+    }
+    case 'rc-bulk': {
+      if (!rcSel.size) return showToast('Hãy tick chọn các món trước', true);
+      const m = el.dataset.m;
+      rc.lines.forEach(l => { if (l.type === 'item' && rcSel.has(l.id)) l.sharers = m === 'all' ? mAll() : [m]; });
+      rcSel.clear(); renderReceiptLines(); break;
+    }
+    case 'rc-save': saveReceipt(); break;
+    case 'save-gem': saveGemSettings(); break;
+  }
+}
+
+function onLineInput(e) {
+  const t = e.target; if (!rc || !isAdmin || !t.dataset.line) return;
+  const l = rcLine(t.dataset.line); if (!l) return;
+  if (t.dataset.field === 'name') l.name = t.value; else l.amount = Math.round(parseFloat(t.value)) || 0;
+  renderReceiptSummary();
+}
+$('rc-lines').addEventListener('input', onLineInput);
+$('rc-adjs').addEventListener('input', onLineInput);
+$('rc-lines').addEventListener('change', e => {
+  if (!e.target.classList.contains('rc-sel')) return;
+  if (e.target.checked) rcSel.add(e.target.dataset.id); else rcSel.delete(e.target.dataset.id);
+  renderReceiptLines();
+});
+$('rc-payer').addEventListener('change', e => { if (rc) { rc.payerId = e.target.value || null; renderReceiptSummary(); } });
+$('scan-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleScanFile(f); });
 
 /* ================= ĐỒNG HỒ ================= */
 function updateClock() {
