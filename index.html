@@ -162,13 +162,13 @@ cROG43TwxBuJIE8eaKNKEkaLZivFDhV9cQbXq02q0+Pkvfkm1WsOSFpl0GvRcV3Eu5UiaJkIIfN+nWCh
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-2xl font-bold">Sổ Cá Nhân</h2>
-          <p class="text-gray-400 text-sm mt-1">Tổng chi tiêu đã trừ tiền ứng trước, đóng quỹ & ghi nợ</p>
+          <p class="text-gray-400 text-sm mt-1">Bấm vào từng thẻ để mở rộng xem chi tiết cá nhân</p>
         </div>
         <button data-action="add-member" class="admin-only bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-medium border border-white/10">
           <i class="fas fa-plus mr-1"></i> Thêm thành viên
         </button>
       </div>
-      <div id="members-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+      <div id="members-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start"></div>
     </section>
 
     <!-- CÔNG NỢ -->
@@ -176,7 +176,7 @@ cROG43TwxBuJIE8eaKNKEkaLZivFDhV9cQbXq02q0+Pkvfkm1WsOSFpl0GvRcV3Eu5UiaJkIIfN+nWCh
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 class="text-2xl font-bold">Sổ Công Nợ</h2>
-          <p class="text-gray-400 text-sm mt-1">Quản lý khoản ghi nợ & duyệt thanh toán tiền mặt</p>
+          <p class="text-gray-400 text-sm mt-1">Folder công nợ từng thành viên & duyệt thanh toán</p>
         </div>
         <button data-action="admin-add-debt" class="admin-only bg-gradient-to-r from-indigo-500 to-pink-500 hover:opacity-90 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-pink-500/25 active:scale-95 flex items-center gap-2">
           <i class="fas fa-plus"></i><span>Thêm nợ</span>
@@ -194,10 +194,10 @@ cROG43TwxBuJIE8eaKNKEkaLZivFDhV9cQbXq02q0+Pkvfkm1WsOSFpl0GvRcV3Eu5UiaJkIIfN+nWCh
         <div id="pending-list" class="space-y-2.5"></div>
       </div>
 
-      <!-- Danh sách Sổ Ghi Nợ -->
+      <!-- Folder Ghi Nợ của từng thành viên -->
       <div class="glass-panel rounded-[2rem] p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
-          <h3 class="font-semibold text-pink-300"><i class="fas fa-book mr-2"></i>Danh sách Ghi Nợ</h3>
+          <h3 class="font-semibold text-pink-300"><i class="fas fa-folder-open mr-2"></i>Folder Công Nợ Thành Viên</h3>
           <span id="debt-total-badge" class="text-xs font-mono text-gray-300"></span>
         </div>
         <div id="debts-list" class="space-y-3"></div>
@@ -436,7 +436,7 @@ cROG43TwxBuJIE8eaKNKEkaLZivFDhV9cQbXq02q0+Pkvfkm1WsOSFpl0GvRcV3Eu5UiaJkIIfN+nWCh
         <textarea id="dm-note" rows="3" maxlength="160" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-500" placeholder="VD: Xin khất tiền nhà tháng này, hẹn ngày 05 tháng sau nhận lương sẽ chuyển đủ..."></textarea>
       </div>
       <div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-200">
-        <i class="fas fa-info-circle mr-1 text-pink-400"></i> Khoản ghi nợ sẽ được đưa vào <b>Sổ Công Nợ</b> ở trạng thái <b>Pending</b> để Chủ nhà duyệt.
+        <i class="fas fa-info-circle mr-1 text-pink-400"></i> Khoản ghi nợ sẽ được đưa vào <b>Folder Công Nợ</b> ở trạng thái <b>Pending</b> để Chủ nhà duyệt.
       </div>
     </div>
 
@@ -658,6 +658,8 @@ function localLegacy() {
 
 let state = { members: [], items: [], log: [], periods: [], payments: [], debts: [], exportedMonths: [], hostId: null, admins: [], allowed: [] };
 let filteredMemberIds = new Set();
+let expandedMemberCards = new Set(); // Rỗng = tất cả thẻ cá nhân mặc định thu gọn
+let expandedDebtFolders = new Set(); // Rỗng = tất cả folder công nợ mặc định thu gọn
 let isAdmin = false, authUser = null;
 let gemCache = { key: '', model: 'gemini-2.5-flash' };
 const FB = () => window.FBX;
@@ -843,6 +845,8 @@ window.App = {
     state.hostId = d.hostId || (state.members[0] && state.members[0].id) || null;
     const validIds = new Set(state.members.map(m => m.id));
     filteredMemberIds.forEach(id => { if (!validIds.has(id)) filteredMemberIds.delete(id); });
+    expandedMemberCards.forEach(id => { if (!validIds.has(id)) expandedMemberCards.delete(id); });
+    expandedDebtFolders.forEach(id => { if (!validIds.has(id)) expandedDebtFolders.delete(id); });
     renderAll();
   },
   items(a) { state.items = a.sort((x, y) => (x.ts || 0) - (y.ts || 0)); renderAll(); },
@@ -940,7 +944,7 @@ function renderTable() {
   } else note.classList.add('hidden');
 }
 
-/* Bảng theo dõi tình trạng đóng tiền cho Chủ nhà (hiển thị trong thẻ Chủ nhà) */
+/* Bảng trạng thái đóng tiền cho Chủ nhà: CHỈ HIỂN THỊ MÀU SẮC (không hiện số tiền) */
 function renderHostCollectionTable(hostMemberId, c) {
   const others = state.members.filter(x => x.id !== hostMemberId);
   if (!others.length) {
@@ -953,39 +957,36 @@ function renderHostCollectionTable(hostMemberId, c) {
     const debtAmt = activeDebts.reduce((s, d) => s + (Number(d.amount) || 0), 0);
     const omNet = c.net[om.id] || 0;
 
-    // Ưu tiên: Đang nợ (Đỏ) -> Đã đóng đủ (Xanh lá) -> Chưa đóng (Vàng)
+    // Ưu tiên: Đang nợ (Đỏ) -> Đã đóng đủ (Xanh lá) -> Chưa đóng (Vàng) — KHÔNG hiển thị số tiền
     if (debtAmt > 0) {
       return `<tr class="bg-red-500/15 border-b border-red-500/25 last:border-0">
-        <td class="px-3 py-2.5 font-semibold text-red-200 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+        <td class="px-3.5 py-2.5 font-semibold text-red-200 flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-red-500 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.85)]"></span>
           <span class="truncate">${esc(om.name)}</span>
         </td>
-        <td class="px-3 py-2.5 text-right">
-          <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/25 text-red-300 border border-red-500/40">Đang nợ</span>
-          <div class="font-mono text-xs font-bold text-red-300 mt-0.5">${fmt(debtAmt)}</div>
+        <td class="px-3.5 py-2.5 text-right">
+          <span class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-500/25 text-red-300 border border-red-500/40">Đang nợ</span>
         </td>
       </tr>`;
     } else if (omNet <= 0) {
       paidCount++;
       return `<tr class="bg-emerald-500/10 border-b border-emerald-500/20 last:border-0">
-        <td class="px-3 py-2.5 font-semibold text-emerald-200 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+        <td class="px-3.5 py-2.5 font-semibold text-emerald-200 flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.85)]"></span>
           <span class="truncate">${esc(om.name)}</span>
         </td>
-        <td class="px-3 py-2.5 text-right">
-          <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">Đã đóng đủ ✓</span>
-          <div class="font-mono text-[11px] text-emerald-300/80 mt-0.5">${omNet < 0 ? 'Ứng dư ' + fmt(-omNet) : '0 đ'}</div>
+        <td class="px-3.5 py-2.5 text-right">
+          <span class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">Đã đóng đủ</span>
         </td>
       </tr>`;
     } else {
       return `<tr class="bg-yellow-500/10 border-b border-yellow-500/20 last:border-0">
-        <td class="px-3 py-2.5 font-semibold text-yellow-200 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-yellow-400 shrink-0 shadow-[0_0_8px_rgba(250,204,21,0.8)]"></span>
+        <td class="px-3.5 py-2.5 font-semibold text-yellow-200 flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-yellow-400 shrink-0 shadow-[0_0_8px_rgba(250,204,21,0.85)]"></span>
           <span class="truncate">${esc(om.name)}</span>
         </td>
-        <td class="px-3 py-2.5 text-right">
-          <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/25 text-yellow-300 border border-yellow-500/40">Chưa đóng</span>
-          <div class="font-mono text-xs font-bold text-yellow-300 mt-0.5">${fmt(omNet)}</div>
+        <td class="px-3.5 py-2.5 text-right">
+          <span class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-yellow-500/25 text-yellow-300 border border-yellow-500/40">Chưa đóng</span>
         </td>
       </tr>`;
     }
@@ -994,14 +995,14 @@ function renderHostCollectionTable(hostMemberId, c) {
   return `<div class="bg-black/25 rounded-2xl border border-white/10 overflow-hidden">
     <div class="px-3.5 py-2.5 bg-white/5 border-b border-white/10 flex items-center justify-between">
       <span class="text-xs font-bold text-indigo-200 flex items-center gap-1.5">
-        <i class="fas fa-users text-pink-400"></i><span>Đóng tiền cho Chủ nhà</span>
+        <i class="fas fa-users text-pink-400"></i><span>Trạng thái đóng tiền</span>
       </span>
-      <span class="text-[11px] font-semibold text-emerald-300">${paidCount}/${others.length} đã đủ</span>
+      <button type="button" data-tab="congno" class="text-[11px] text-pink-300 hover:underline font-medium">Xem Sổ Công Nợ →</button>
     </div>
     <table class="w-full text-xs">
       <tbody>${rowsHtml}</tbody>
     </table>
-    <div class="px-3 py-1.5 bg-black/30 flex items-center justify-between text-[10px] text-gray-400 border-t border-white/5">
+    <div class="px-3.5 py-2 bg-black/30 flex items-center justify-between text-[10px] text-gray-400 border-t border-white/5">
       <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Đóng đủ</span>
       <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>Chưa đóng</span>
       <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span>Đang nợ</span>
@@ -1013,6 +1014,7 @@ function renderCards() {
   const c = compute();
   $('members-cards').innerHTML = state.members.map(m => {
     const isHostCard = m.id === state.hostId;
+    const isExpanded = expandedMemberCards.has(m.id);
     const paidItems = state.items.filter(i => i.payerId === m.id);
     const owedItems = state.items.filter(i => (i.split[m.id] || 0) > 0);
     const totalPaid = c.paid[m.id] || 0;
@@ -1051,7 +1053,6 @@ function renderCards() {
       }
     }
 
-    // Với Chủ nhà: hiển thị bảng theo dõi đóng tiền cho Chủ nhà (thay vì 2 nút Đóng tiền & Ghi nợ)
     const actionOrHostTable = isHostCard
       ? renderHostCollectionTable(m.id, c)
       : `<div class="grid grid-cols-2 gap-2.5">
@@ -1063,20 +1064,34 @@ function renderCards() {
           </button>
         </div>`;
 
-    return `<div class="glass-panel rounded-[2rem] p-6 border-t border-white/10 flex flex-col justify-between space-y-4">
-      <div class="space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-white/10">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center border border-white/10"><i class="fas ${isHostCard ? 'fa-crown text-amber-300' : 'fa-user text-indigo-300'} text-xl"></i></div>
-            <div><h3 class="text-lg font-bold">${esc(m.name)}</h3>${badge}</div>
+    return `<div class="glass-panel rounded-[2rem] p-5 border-t border-white/10 transition-all">
+      <!-- Header thẻ: Khi thu gọn KHÔNG hiển thị bất kỳ số tiền nào -->
+      <div data-action="toggle-member-card" data-id="${m.id}" class="flex items-center justify-between gap-2 cursor-pointer select-none ${isExpanded ? 'pb-3 mb-4 border-b border-white/10' : ''}">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center border border-white/10 shrink-0">
+            <i class="fas ${isHostCard ? 'fa-crown text-amber-300' : 'fa-user text-indigo-300'} text-lg"></i>
           </div>
-          <div class="admin-only">
-            <button data-action="rename-member" data-id="${m.id}" class="text-gray-500 hover:text-indigo-300 w-8 h-8 rounded-full hover:bg-white/10"><i class="fas fa-pen text-xs"></i></button>
-            <button data-action="remove-member" data-id="${m.id}" class="text-gray-500 hover:text-pink-400 w-8 h-8 rounded-full hover:bg-white/10"><i class="fas fa-times"></i></button>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold truncate">${esc(m.name)}</h3>
+              ${isHostCard ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">Chủ nhà</span>' : ''}
+            </div>
+            ${isExpanded ? `<div class="mt-0.5">${badge}</div>` : `<p class="text-[11px] text-gray-400">Bấm để mở rộng</p>`}
           </div>
         </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <div class="admin-only">
+            <button data-action="rename-member" data-id="${m.id}" class="text-gray-500 hover:text-indigo-300 w-8 h-8 rounded-full hover:bg-white/10" title="Đổi tên"><i class="fas fa-pen text-xs"></i></button>
+            <button data-action="remove-member" data-id="${m.id}" class="text-gray-500 hover:text-pink-400 w-8 h-8 rounded-full hover:bg-white/10" title="Xóa thành viên"><i class="fas fa-times"></i></button>
+          </div>
+          <button type="button" data-action="toggle-member-card" data-id="${m.id}" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-gray-300 transition-transform" title="${isExpanded ? 'Thu gọn' : 'Mở rộng'}">
+            <i class="fas ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-xs"></i>
+          </button>
+        </div>
+      </div>
 
-        <!-- Bảng tính tổng thẻ cá nhân -->
+      <!-- Nội dung chi tiết chỉ hiển thị khi mở rộng -->
+      ${isExpanded ? `<div class="space-y-4">
         <div class="bg-gradient-to-br from-indigo-950/60 to-pink-950/30 rounded-2xl p-3.5 border border-white/10 space-y-1.5 text-xs">
           <div class="flex justify-between text-gray-300">
             <span>Tổng phần phải đóng:</span>
@@ -1104,7 +1119,6 @@ function renderCards() {
 
         ${pendingNotices.join('')}
 
-        <!-- Chi tiết các khoản -->
         <div class="space-y-3">
           <div class="bg-black/20 rounded-xl p-3 border border-white/5">
             <h4 class="text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-up mr-1"></i>Đã ứng trước</span><span>${fmt(totalPaid)}</span></h4>
@@ -1124,7 +1138,7 @@ function renderCards() {
             )).join('')}</div>
           </div>` : ''}
         </div>
-      </div>
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1186,47 +1200,88 @@ function renderDebts() {
     pBox.classList.add('hidden');
   }
 
+  // Nhóm các khoản nợ thành từng Folder rút gọn của mỗi thành viên
   const allDebts = [...(state.debts || [])].sort((a, b) => (b.ts || 0) - (a.ts || 0));
   const activeTotal = allDebts.filter(d => d.status === 'approved').reduce((s, d) => s + d.amount, 0);
   $('debt-total-badge').innerText = activeTotal > 0 ? `Tổng đang nợ: ${fmt(activeTotal)}` : '';
 
-  if (!allDebts.length) {
-    $('debts-list').innerHTML = '<p class="text-sm text-gray-500 text-center py-6">Chưa có khoản ghi nợ nào trong sổ</p>';
+  const folderMembers = state.members.filter(m => m.id !== state.hostId || allDebts.some(d => d.memberId === m.id));
+  if (!folderMembers.length) {
+    $('debts-list').innerHTML = '<p class="text-sm text-gray-500 text-center py-6">Chưa có folder công nợ nào</p>';
     return;
   }
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  $('debts-list').innerHTML = allDebts.map(d => {
-    const isOverdue = d.status === 'approved' && d.dueDate && d.dueDate < todayStr;
-    let statusBadge = '';
-    if (d.status === 'pending') statusBadge = '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">Pending - Chờ duyệt</span>';
-    else if (d.status === 'approved') statusBadge = isOverdue
-      ? '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/40 font-semibold">Quá hạn trả nợ!</span>'
-      : '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-semibold">Đang ghi nợ</span>';
-    else if (d.status === 'paid') statusBadge = '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">Đã trả nợ ✓</span>';
+  $('debts-list').innerHTML = folderMembers.map(m => {
+    const mDebts = allDebts.filter(d => d.memberId === m.id);
+    const activeDebts = mDebts.filter(d => d.status === 'approved');
+    const pendingM = mDebts.filter(d => d.status === 'pending');
+    const activeSum = activeDebts.reduce((s, d) => s + d.amount, 0);
+    const hasOverdue = activeDebts.some(d => d.dueDate && d.dueDate < todayStr);
+    const isOpen = expandedDebtFolders.has(m.id);
 
-    return `<div class="bg-black/25 rounded-2xl p-4 border ${isOverdue ? 'border-red-500/40' : 'border-white/10'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="space-y-1.5 min-w-0">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="font-bold text-base text-white">${esc(memberName(d.memberId))}</span>
-          <span class="font-mono font-bold text-base ${d.status === 'paid' ? 'line-through text-gray-500' : 'text-red-400'}">${fmt(d.amount)}</span>
-          ${statusBadge}
+    const folderColor = hasOverdue || activeSum > 0 ? 'text-red-400' : pendingM.length > 0 ? 'text-amber-300' : 'text-indigo-300';
+    const borderColor = hasOverdue ? 'border-red-500/35' : activeSum > 0 ? 'border-pink-500/25' : 'border-white/10';
+
+    const statusSummary = activeSum > 0
+      ? `<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Nợ: ${fmt(activeSum)}</span>`
+      : pendingM.length > 0
+      ? `<span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">${pendingM.length} chờ duyệt</span>`
+      : mDebts.length > 0
+      ? `<span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">Đã trả hết ✓</span>`
+      : `<span class="text-[11px] text-gray-500">Trống</span>`;
+
+    const innerCards = mDebts.length ? mDebts.map(d => {
+      const isOverdue = d.status === 'approved' && d.dueDate && d.dueDate < todayStr;
+      let statusBadge = '';
+      if (d.status === 'pending') statusBadge = '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">Pending - Chờ duyệt</span>';
+      else if (d.status === 'approved') statusBadge = isOverdue
+        ? '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/40 font-semibold">Quá hạn trả nợ!</span>'
+        : '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-semibold">Đang ghi nợ</span>';
+      else if (d.status === 'paid') statusBadge = '<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">Đã trả nợ ✓</span>';
+
+      return `<div class="bg-black/35 rounded-2xl p-4 border ${isOverdue ? 'border-red-500/40' : 'border-white/10'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="space-y-1.5 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-mono font-bold text-base ${d.status === 'paid' ? 'line-through text-gray-500' : 'text-red-400'}">${fmt(d.amount)}</span>
+            ${statusBadge}
+          </div>
+          <div class="text-xs text-gray-300 flex flex-wrap items-center gap-3">
+            ${d.dueDate ? `<span><i class="far fa-calendar-alt mr-1 text-indigo-300"></i>Hẹn trả: <b class="${isOverdue ? 'text-red-400' : 'text-indigo-200'}">${esc(fmtDate(d.dueDate))}</b></span>` : ''}
+            <span class="text-gray-500">Ghi ngày: ${esc(d.createdAt)}</span>
+          </div>
+          ${d.note ? `<p class="text-xs text-gray-300 bg-white/5 rounded-lg px-3 py-1.5 border border-white/5"><i class="fas fa-sticky-note mr-1.5 text-amber-300"></i>${esc(d.note)}</p>` : ''}
+          ${d.status === 'paid' && d.paidAt ? `<p class="text-[11px] text-emerald-400">Đã thanh toán lúc: ${esc(d.paidAt)}</p>` : ''}
         </div>
-        <div class="text-xs text-gray-300 flex flex-wrap items-center gap-3">
-          ${d.dueDate ? `<span><i class="far fa-calendar-alt mr-1 text-indigo-300"></i>Hẹn trả: <b class="${isOverdue ? 'text-red-400' : 'text-indigo-200'}">${esc(fmtDate(d.dueDate))}</b></span>` : ''}
-          <span class="text-gray-500">Ghi ngày: ${esc(d.createdAt)}</span>
+        ${isAdmin ? `<div class="flex flex-wrap items-center gap-2 shrink-0">
+          ${d.status === 'approved' ? `
+            <button data-action="mark-debt-paid" data-id="${d.id}" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95"><i class="fas fa-check-double mr-1"></i>Đã trả nợ</button>
+          ` : ''}
+          <button data-action="edit-debt" data-id="${d.id}" class="bg-white/10 hover:bg-white/20 text-indigo-300 border border-white/10 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95"><i class="fas fa-edit mr-1"></i>Sửa</button>
+          <button data-action="delete-debt" data-id="${d.id}" class="text-gray-500 hover:text-pink-400 p-2" title="Xóa thẻ nợ"><i class="fas fa-trash-alt text-xs"></i></button>
+        </div>` : ''}
+      </div>`;
+    }).join('') : `<p class="text-xs text-gray-500 italic text-center py-3">Chưa có khoản ghi nợ nào trong folder của ${esc(m.name)}</p>`;
+
+    return `<div class="bg-black/20 rounded-2xl border ${borderColor} overflow-hidden transition-all">
+      <button type="button" data-action="toggle-debt-folder" data-id="${m.id}" class="w-full px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-white/5 transition-all text-left">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+            <i class="fas ${isOpen ? 'fa-folder-open' : 'fa-folder'} ${folderColor} text-lg"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-sm sm:text-base text-white truncate">${esc(m.name)}</div>
+            <div class="text-[11px] text-gray-400">${mDebts.length} bản ghi nợ</div>
+          </div>
         </div>
-        ${d.note ? `<p class="text-xs text-gray-300 bg-white/5 rounded-lg px-3 py-1.5 border border-white/5"><i class="fas fa-sticky-note mr-1.5 text-amber-300"></i>${esc(d.note)}</p>` : ''}
-        ${d.status === 'paid' && d.paidAt ? `<p class="text-[11px] text-emerald-400">Đã thanh toán lúc: ${esc(d.paidAt)}</p>` : ''}
-      </div>
-      <!-- Chỉ Chủ nhà (isAdmin) mới có quyền chỉnh sửa / xác nhận / xóa thẻ nợ -->
-      ${isAdmin ? `<div class="flex flex-wrap items-center gap-2 shrink-0">
-        ${d.status === 'approved' ? `
-          <button data-action="mark-debt-paid" data-id="${d.id}" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95"><i class="fas fa-check-double mr-1"></i>Đã trả nợ</button>
-        ` : ''}
-        <button data-action="edit-debt" data-id="${d.id}" class="bg-white/10 hover:bg-white/20 text-indigo-300 border border-white/10 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95"><i class="fas fa-edit mr-1"></i>Sửa</button>
-        <button data-action="delete-debt" data-id="${d.id}" class="text-gray-500 hover:text-pink-400 p-2" title="Xóa thẻ nợ"><i class="fas fa-trash-alt text-xs"></i></button>
-      </div>` : ''}
+        <div class="flex items-center gap-2.5 shrink-0">
+          ${statusSummary}
+          <span class="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300">
+            <i class="fas ${isOpen ? 'fa-chevron-up' : 'fa-chevron-down'} text-xs"></i>
+          </span>
+        </div>
+      </button>
+      ${isOpen ? `<div class="px-4 pb-4 pt-2 border-t border-white/10 space-y-2.5 bg-black/15">${innerCards}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1523,7 +1578,7 @@ function submitDebt() {
   $('debt-modal').classList.remove('open');
   renderAll();
   switchTab('congno');
-  showToast('Đã ghi vào Sổ Công Nợ — chờ Chủ nhà duyệt!');
+  showToast('Đã ghi vào Folder Công Nợ — chờ Chủ nhà duyệt!');
 }
 
 /* Chủ nhà thêm mới hoặc chỉnh sửa thẻ nợ */
@@ -1536,7 +1591,6 @@ function openAdminDebtModal(debtId = null) {
   if (debtId && !d) return;
 
   $('adm-dm-title').innerText = d ? 'Chỉnh sửa thẻ nợ' : 'Thêm khoản nợ mới';
-  // Đưa các thành viên (ưu tiên thành viên không phải chủ nhà lên trước) vào danh sách
   const sortedMembers = [...state.members].sort((a, b) => (a.id === state.hostId ? 1 : 0) - (b.id === state.hostId ? 1 : 0));
   $('adm-dm-member').innerHTML = sortedMembers.map(m => `<option value="${m.id}" ${d && d.memberId === m.id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
   $('adm-dm-amount').value = d ? d.amount : '';
@@ -1579,14 +1633,15 @@ function saveAdminDebt() {
       amount,
       dueDate,
       note,
-      status: 'approved', // Chủ nhà thêm trực tiếp nên có hiệu lực ngay
+      status: 'approved',
       createdAt: nowStr(),
       ts: Date.now()
     });
     addLog(`Chủ nhà thêm nợ cho ${memberName(memberId)}`, amount);
-    showToast('Đã thêm khoản nợ vào sổ');
+    showToast('Đã thêm khoản nợ vào folder');
   }
 
+  expandedDebtFolders.add(memberId);
   saveMeta();
   $('admin-debt-modal').classList.remove('open');
   editingDebtId = null;
@@ -1736,6 +1791,8 @@ function removeMember(id) {
   openDialog({ title: `Xóa ${m.name}?`, msg: 'Phần tiền của người này ở từng khoản sẽ được chia đều lại cho các thành viên còn lại để tổng không bị lệch.', okText: 'Xóa', cb: () => {
     state.members = state.members.filter(x => x.id !== id);
     filteredMemberIds.delete(id);
+    expandedMemberCards.delete(id);
+    expandedDebtFolders.delete(id);
     const rest = state.members.map(x => x.id);
     state.items.forEach(i => {
       if (i.lines) {
@@ -1797,116 +1854,131 @@ function resetAll() {
 
 /* ================= SỰ KIỆN ================= */
 document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el) {
+    const id = el.dataset.id;
+    switch (el.dataset.action) {
+      case 'toggle-member-card': {
+        if (expandedMemberCards.has(id)) expandedMemberCards.delete(id);
+        else expandedMemberCards.add(id);
+        renderCards();
+        return;
+      }
+      case 'toggle-debt-folder': {
+        if (expandedDebtFolders.has(id)) expandedDebtFolders.delete(id);
+        else expandedDebtFolders.add(id);
+        renderDebts();
+        return;
+      }
+      case 'filter-all': filteredMemberIds.clear(); renderTable(); return;
+      case 'filter-member': {
+        if (filteredMemberIds.has(id)) filteredMemberIds.delete(id);
+        else filteredMemberIds.add(id);
+        if (filteredMemberIds.size === state.members.length) filteredMemberIds.clear();
+        renderTable(); return;
+      }
+      case 'open-export-month': openExportMonthModal(); return;
+      case 'close-export-month': $('export-month-modal').classList.remove('open'); return;
+      case 'run-export-month': runExportMonthPDF(); return;
+
+      case 'open-pay-modal': openPayModal(id); return;
+      case 'close-pay-modal': $('pay-modal').classList.remove('open'); return;
+      case 'pm-fill-full': $('pm-amount').value = el.dataset.val || ''; updateVietQR(); return;
+      case 'pm-method': setPayMethod(el.dataset.m); return;
+      case 'pm-remove-proof': payProofData = null; updatePayProofUI(); return;
+      case 'pm-submit': submitPayment(); return;
+      case 'copy-stk': navigator.clipboard?.writeText(BANK_INFO.accountNo).then(() => showToast('Đã copy STK: ' + BANK_INFO.accountNo)).catch(() => showToast('STK: ' + BANK_INFO.accountNo)); return;
+      case 'view-pay-proof': {
+        const p = (state.payments || []).find(x => x.id === id);
+        if (p && p.proof) { $('lightbox-img').src = p.proof; $('lightbox').classList.add('open'); }
+        return;
+      }
+
+      case 'open-debt-modal': openDebtModal(id); return;
+      case 'close-debt-modal': $('debt-modal').classList.remove('open'); return;
+      case 'dm-submit': submitDebt(); return;
+
+      case 'admin-add-debt': openAdminDebtModal(null); return;
+      case 'edit-debt': openAdminDebtModal(id); return;
+      case 'close-admin-debt-modal': $('admin-debt-modal').classList.remove('open'); editingDebtId = null; return;
+      case 'save-admin-debt': saveAdminDebt(); return;
+
+      case 'approve-debt': {
+        if (!requireAdmin()) return;
+        const d = (state.debts || []).find(x => x.id === id); if (!d) return;
+        d.status = 'approved'; d.approvedAt = nowStr();
+        expandedDebtFolders.add(d.memberId);
+        addLog(`Chủ nhà duyệt ghi nợ của ${memberName(d.memberId)}`, d.amount);
+        saveMeta(); renderAll(); showToast('Đã duyệt khoản ghi nợ'); return;
+      }
+      case 'reject-debt': {
+        if (!requireAdmin()) return;
+        const d = (state.debts || []).find(x => x.id === id); if (!d) return;
+        state.debts = state.debts.filter(x => x.id !== id);
+        addLog(`Từ chối ghi nợ của ${memberName(d.memberId)}`, d.amount);
+        saveMeta(); renderAll(); showToast('Đã từ chối yêu cầu ghi nợ'); return;
+      }
+      case 'mark-debt-paid': {
+        if (!requireAdmin()) return;
+        const d = (state.debts || []).find(x => x.id === id); if (!d) return;
+        openDialog({ title: 'Xác nhận đã trả nợ?', msg: `${memberName(d.memberId)} trả khoản nợ ${fmt(d.amount)}? Số tiền này sẽ được trừ vào số dư trên thẻ cá nhân.`, okText: 'Xác nhận', cb: () => {
+          d.status = 'paid'; d.paidAt = nowStr();
+          state.payments = state.payments || [];
+          state.payments.push({
+            id: uid('pay'), memberId: d.memberId, amount: d.amount, method: 'cash',
+            note: 'Trả nợ: ' + (d.note || (d.dueDate ? fmtDate(d.dueDate) : 'Sổ công nợ')), proof: null, status: 'approved', createdAt: nowStr(), ts: Date.now()
+          });
+          addLog(`${memberName(d.memberId)} đã trả nợ xong`, d.amount);
+          saveMeta(); renderAll(); showToast('Đã xác nhận trả nợ & cập nhật thẻ cá nhân!');
+        }});
+        return;
+      }
+      case 'delete-debt': {
+        if (!requireAdmin()) return;
+        const d = (state.debts || []).find(x => x.id === id); if (!d) return;
+        openDialog({ title: 'Xóa thẻ nợ?', msg: `${memberName(d.memberId)} — ${fmt(d.amount)}`, okText: 'Xóa', cb: () => {
+          state.debts = state.debts.filter(x => x.id !== id);
+          addLog(`Xóa thẻ nợ của ${memberName(d.memberId)}`, d.amount);
+          saveMeta(); renderAll(); showToast('Đã xóa thẻ nợ');
+        }});
+        return;
+      }
+      case 'approve-pay': {
+        if (!requireAdmin()) return;
+        const p = (state.payments || []).find(x => x.id === id); if (!p) return;
+        p.status = 'approved'; p.approvedAt = nowStr();
+        addLog(`Chủ nhà xác nhận nhận tiền mặt của ${memberName(p.memberId)}`, p.amount);
+        saveMeta(); renderAll(); showToast('Đã duyệt đóng tiền mặt & trừ vào thẻ cá nhân!'); return;
+      }
+      case 'reject-pay': {
+        if (!requireAdmin()) return;
+        const p = (state.payments || []).find(x => x.id === id); if (!p) return;
+        state.payments = state.payments.filter(x => x.id !== id);
+        addLog(`Từ chối đóng tiền mặt của ${memberName(p.memberId)}`, p.amount);
+        saveMeta(); renderAll(); showToast('Đã từ chối xác nhận tiền mặt'); return;
+      }
+
+      case 'add-item': openItemModal(); return;
+      case 'edit-item': openItemModal(id); return;
+      case 'delete-item': deleteItem(id); return;
+      case 'save-item': saveItem(); return;
+      case 'close-modal': $('item-modal').classList.remove('open'); return;
+      case 'remove-photo': draftPhoto = null; updatePhotoUI(); return;
+      case 'view-photo': { const it = state.items.find(i => i.id === id); if (it && it.photo) { $('lightbox-img').src = it.photo; $('lightbox').classList.add('open'); } return; }
+      case 'close-lightbox': $('lightbox').classList.remove('open'); return;
+      case 'add-member': addMember(); return;
+      case 'rename-member': renameMember(id); return;
+      case 'remove-member': removeMember(id); return;
+      case 'export': exportData(); return;
+      case 'reset-all': resetAll(); return;
+      case 'logout': logout(); return;
+      case 'dlg-cancel': closeDialog(); return;
+      case 'dlg-ok': { const cb = dlgCb, v = $('dlg-input').value; closeDialog(); if (cb) cb(v); return; }
+      default: extraAction(el.dataset.action, id, el); return;
+    }
+  }
   const tabBtn = e.target.closest('[data-tab]');
   if (tabBtn) return switchTab(tabBtn.dataset.tab);
-  const el = e.target.closest('[data-action]'); if (!el) return;
-  const id = el.dataset.id;
-  switch (el.dataset.action) {
-    case 'filter-all': filteredMemberIds.clear(); renderTable(); break;
-    case 'filter-member': {
-      if (filteredMemberIds.has(id)) filteredMemberIds.delete(id);
-      else filteredMemberIds.add(id);
-      if (filteredMemberIds.size === state.members.length) filteredMemberIds.clear();
-      renderTable(); break;
-    }
-    case 'open-export-month': openExportMonthModal(); break;
-    case 'close-export-month': $('export-month-modal').classList.remove('open'); break;
-    case 'run-export-month': runExportMonthPDF(); break;
-
-    case 'open-pay-modal': openPayModal(id); break;
-    case 'close-pay-modal': $('pay-modal').classList.remove('open'); break;
-    case 'pm-fill-full': $('pm-amount').value = el.dataset.val || ''; updateVietQR(); break;
-    case 'pm-method': setPayMethod(el.dataset.m); break;
-    case 'pm-remove-proof': payProofData = null; updatePayProofUI(); break;
-    case 'pm-submit': submitPayment(); break;
-    case 'copy-stk': navigator.clipboard?.writeText(BANK_INFO.accountNo).then(() => showToast('Đã copy STK: ' + BANK_INFO.accountNo)).catch(() => showToast('STK: ' + BANK_INFO.accountNo)); break;
-    case 'view-pay-proof': {
-      const p = (state.payments || []).find(x => x.id === id);
-      if (p && p.proof) { $('lightbox-img').src = p.proof; $('lightbox').classList.add('open'); }
-      break;
-    }
-
-    case 'open-debt-modal': openDebtModal(id); break;
-    case 'close-debt-modal': $('debt-modal').classList.remove('open'); break;
-    case 'dm-submit': submitDebt(); break;
-
-    case 'admin-add-debt': openAdminDebtModal(null); break;
-    case 'edit-debt': openAdminDebtModal(id); break;
-    case 'close-admin-debt-modal': $('admin-debt-modal').classList.remove('open'); editingDebtId = null; break;
-    case 'save-admin-debt': saveAdminDebt(); break;
-
-    case 'approve-debt': {
-      if (!requireAdmin()) break;
-      const d = (state.debts || []).find(x => x.id === id); if (!d) break;
-      d.status = 'approved'; d.approvedAt = nowStr();
-      addLog(`Chủ nhà duyệt ghi nợ của ${memberName(d.memberId)}`, d.amount);
-      saveMeta(); renderAll(); showToast('Đã duyệt khoản ghi nợ'); break;
-    }
-    case 'reject-debt': {
-      if (!requireAdmin()) break;
-      const d = (state.debts || []).find(x => x.id === id); if (!d) break;
-      state.debts = state.debts.filter(x => x.id !== id);
-      addLog(`Từ chối ghi nợ của ${memberName(d.memberId)}`, d.amount);
-      saveMeta(); renderAll(); showToast('Đã từ chối yêu cầu ghi nợ'); break;
-    }
-    case 'mark-debt-paid': {
-      if (!requireAdmin()) break;
-      const d = (state.debts || []).find(x => x.id === id); if (!d) break;
-      openDialog({ title: 'Xác nhận đã trả nợ?', msg: `${memberName(d.memberId)} trả khoản nợ ${fmt(d.amount)}? Số tiền này sẽ được trừ vào số dư trên thẻ cá nhân.`, okText: 'Xác nhận', cb: () => {
-        d.status = 'paid'; d.paidAt = nowStr();
-        state.payments = state.payments || [];
-        state.payments.push({
-          id: uid('pay'), memberId: d.memberId, amount: d.amount, method: 'cash',
-          note: 'Trả nợ: ' + (d.note || (d.dueDate ? fmtDate(d.dueDate) : 'Sổ công nợ')), proof: null, status: 'approved', createdAt: nowStr(), ts: Date.now()
-        });
-        addLog(`${memberName(d.memberId)} đã trả nợ xong`, d.amount);
-        saveMeta(); renderAll(); showToast('Đã xác nhận trả nợ & cập nhật thẻ cá nhân!');
-      }});
-      break;
-    }
-    case 'delete-debt': {
-      if (!requireAdmin()) break;
-      const d = (state.debts || []).find(x => x.id === id); if (!d) break;
-      openDialog({ title: 'Xóa thẻ nợ?', msg: `${memberName(d.memberId)} — ${fmt(d.amount)}`, okText: 'Xóa', cb: () => {
-        state.debts = state.debts.filter(x => x.id !== id);
-        addLog(`Xóa thẻ nợ của ${memberName(d.memberId)}`, d.amount);
-        saveMeta(); renderAll(); showToast('Đã xóa thẻ nợ');
-      }});
-      break;
-    }
-    case 'approve-pay': {
-      if (!requireAdmin()) break;
-      const p = (state.payments || []).find(x => x.id === id); if (!p) break;
-      p.status = 'approved'; p.approvedAt = nowStr();
-      addLog(`Chủ nhà xác nhận nhận tiền mặt của ${memberName(p.memberId)}`, p.amount);
-      saveMeta(); renderAll(); showToast('Đã duyệt đóng tiền mặt & trừ vào thẻ cá nhân!'); break;
-    }
-    case 'reject-pay': {
-      if (!requireAdmin()) break;
-      const p = (state.payments || []).find(x => x.id === id); if (!p) break;
-      state.payments = state.payments.filter(x => x.id !== id);
-      addLog(`Từ chối đóng tiền mặt của ${memberName(p.memberId)}`, p.amount);
-      saveMeta(); renderAll(); showToast('Đã từ chối xác nhận tiền mặt'); break;
-    }
-
-    case 'add-item': openItemModal(); break;
-    case 'edit-item': openItemModal(id); break;
-    case 'delete-item': deleteItem(id); break;
-    case 'save-item': saveItem(); break;
-    case 'close-modal': $('item-modal').classList.remove('open'); break;
-    case 'remove-photo': draftPhoto = null; updatePhotoUI(); break;
-    case 'view-photo': { const it = state.items.find(i => i.id === id); if (it && it.photo) { $('lightbox-img').src = it.photo; $('lightbox').classList.add('open'); } break; }
-    case 'close-lightbox': $('lightbox').classList.remove('open'); break;
-    case 'add-member': addMember(); break;
-    case 'rename-member': renameMember(id); break;
-    case 'remove-member': removeMember(id); break;
-    case 'export': exportData(); break;
-    case 'reset-all': resetAll(); break;
-    case 'logout': logout(); break;
-    case 'dlg-cancel': closeDialog(); break;
-    case 'dlg-ok': { const cb = dlgCb, v = $('dlg-input').value; closeDialog(); if (cb) cb(v); break; }
-    default: extraAction(el.dataset.action, id, el);
-  }
 });
 
 $('pm-amount').addEventListener('input', updateVietQR);
