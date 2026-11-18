@@ -658,8 +658,8 @@ function localLegacy() {
 
 let state = { members: [], items: [], log: [], periods: [], payments: [], debts: [], exportedMonths: [], hostId: null, admins: [], allowed: [] };
 let filteredMemberIds = new Set();
-let expandedMemberCards = new Set(); // Rỗng = tất cả thẻ cá nhân mặc định thu gọn
-let expandedDebtFolders = new Set(); // Rỗng = tất cả folder công nợ mặc định thu gọn
+let expandedMemberCards = new Set();
+let expandedDebtFolders = new Set();
 let isAdmin = false, authUser = null;
 let gemCache = { key: '', model: 'gemini-2.5-flash' };
 const FB = () => window.FBX;
@@ -685,14 +685,35 @@ const requireAdmin = () => { if (!isAdmin) { showToast('Chỉ Chủ nhà mới l
 
 /* ================= TÍNH TOÁN ================= */
 function compute() {
-  const share = {}, paid = {}, settled = {};
-  state.members.forEach(m => { share[m.id] = 0; paid[m.id] = 0; settled[m.id] = 0; });
+  const share = {}, paid = {}, settled = {}, owedFromOthers = {}, paidForOthers = {}, selfPaid = {};
+  state.members.forEach(m => {
+    share[m.id] = 0;
+    paid[m.id] = 0;
+    settled[m.id] = 0;
+    owedFromOthers[m.id] = 0;
+    paidForOthers[m.id] = 0;
+    selfPaid[m.id] = 0;
+  });
   let total = 0, unpaid = 0;
   state.items.forEach(it => {
     total += it.amount;
-    state.members.forEach(m => { share[m.id] += it.split[m.id] || 0; });
-    if (it.payerId && paid[it.payerId] !== undefined) paid[it.payerId] += it.amount;
-    else unpaid += it.amount;
+    state.members.forEach(m => {
+      const mShare = it.split[m.id] || 0;
+      share[m.id] += mShare;
+      if (it.payerId === m.id) {
+        selfPaid[m.id] += mShare;
+      } else {
+        owedFromOthers[m.id] += mShare;
+      }
+    });
+    if (it.payerId && paid[it.payerId] !== undefined) {
+      paid[it.payerId] += it.amount;
+      // Chỉ tính phần tiền các thành viên khác phải đóng cho các món item từ bill người này đã ứng
+      const othersAmount = state.members.reduce((s, other) => other.id === it.payerId ? s : s + (it.split[other.id] || 0), 0);
+      paidForOthers[it.payerId] += othersAmount;
+    } else {
+      unpaid += it.amount;
+    }
   });
   (state.payments || []).forEach(p => {
     if (p.status === 'approved' && settled[p.memberId] !== undefined) {
@@ -701,9 +722,9 @@ function compute() {
   });
   const net = {};
   state.members.forEach(m => {
-    net[m.id] = share[m.id] - paid[m.id] - settled[m.id];
+    net[m.id] = owedFromOthers[m.id] - paidForOthers[m.id] - settled[m.id];
   });
-  return { share, paid, settled, net, total, unpaid };
+  return { share, paid, settled, owedFromOthers, paidForOthers, selfPaid, net, total, unpaid };
 }
 
 function getOverdueMonths() {
@@ -951,13 +972,11 @@ function renderHostCollectionTable(hostMemberId, c) {
     return `<div class="bg-black/25 rounded-2xl p-3.5 border border-white/10 text-xs text-gray-400 text-center">Chưa có thành viên khác trong nhà</div>`;
   }
 
-  let paidCount = 0;
   const rowsHtml = others.map(om => {
     const activeDebts = (state.debts || []).filter(d => d.memberId === om.id && d.status === 'approved');
     const debtAmt = activeDebts.reduce((s, d) => s + (Number(d.amount) || 0), 0);
     const omNet = c.net[om.id] || 0;
 
-    // Ưu tiên: Đang nợ (Đỏ) -> Đã đóng đủ (Xanh lá) -> Chưa đóng (Vàng) — KHÔNG hiển thị số tiền
     if (debtAmt > 0) {
       return `<tr class="bg-red-500/15 border-b border-red-500/25 last:border-0">
         <td class="px-3.5 py-2.5 font-semibold text-red-200 flex items-center gap-2.5">
@@ -969,7 +988,6 @@ function renderHostCollectionTable(hostMemberId, c) {
         </td>
       </tr>`;
     } else if (omNet <= 0) {
-      paidCount++;
       return `<tr class="bg-emerald-500/10 border-b border-emerald-500/20 last:border-0">
         <td class="px-3.5 py-2.5 font-semibold text-emerald-200 flex items-center gap-2.5">
           <span class="w-3 h-3 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.85)]"></span>
@@ -1016,9 +1034,11 @@ function renderCards() {
     const isHostCard = m.id === state.hostId;
     const isExpanded = expandedMemberCards.has(m.id);
     const paidItems = state.items.filter(i => i.payerId === m.id);
-    const owedItems = state.items.filter(i => (i.split[m.id] || 0) > 0);
+    const owedItemsFromOthers = state.items.filter(i => i.payerId !== m.id && (i.split[m.id] || 0) > 0);
     const totalPaid = c.paid[m.id] || 0;
-    const totalOwed = c.share[m.id] || 0;
+    const memberPaidForOthers = c.paidForOthers[m.id] || 0;
+    const memberSelfPaid = c.selfPaid[m.id] || 0;
+    const memberOwedFromOthers = c.owedFromOthers[m.id] || 0;
     const totalSettled = c.settled[m.id] || 0;
     const net = c.net[m.id] || 0;
 
@@ -1028,7 +1048,13 @@ function renderCards() {
     const pendingDebts = memberDebts.filter(d => d.status === 'pending');
     const activeDebts = memberDebts.filter(d => d.status === 'approved');
 
-    const row = (n, a, extra = '') => `<div class="flex justify-between items-center text-xs py-1 border-b border-white/5 last:border-0"><span class="text-gray-400 truncate pr-2">${esc(n)}${extra}</span><span class="font-mono shrink-0">${fmt(a)}</span></div>`;
+    const row = (n, a, extra = '', sub = '') => `<div class="flex justify-between items-start gap-2 text-xs py-1.5 border-b border-white/5 last:border-0">
+      <div class="min-w-0 pr-1">
+        <div class="text-gray-300 truncate">${esc(n)}${extra}</div>
+        ${sub ? `<div class="text-[10px] text-gray-500">${esc(sub)}</div>` : ''}
+      </div>
+      <span class="font-mono shrink-0 text-gray-200">${fmt(a)}</span>
+    </div>`;
 
     const badge = isHostCard
       ? `<span class="bg-indigo-500/25 text-indigo-300 text-[10px] px-2 py-0.5 rounded-full border border-indigo-500/40 font-semibold"><i class="fas fa-crown mr-1 text-amber-300"></i>Chủ nhà</span>`
@@ -1065,7 +1091,6 @@ function renderCards() {
         </div>`;
 
     return `<div class="glass-panel rounded-[2rem] p-5 border-t border-white/10 transition-all">
-      <!-- Header thẻ: Khi thu gọn KHÔNG hiển thị bất kỳ số tiền nào -->
       <div data-action="toggle-member-card" data-id="${m.id}" class="flex items-center justify-between gap-2 cursor-pointer select-none ${isExpanded ? 'pb-3 mb-4 border-b border-white/10' : ''}">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500/20 to-pink-500/20 flex items-center justify-center border border-white/10 shrink-0">
@@ -1090,17 +1115,20 @@ function renderCards() {
         </div>
       </div>
 
-      <!-- Nội dung chi tiết chỉ hiển thị khi mở rộng -->
       ${isExpanded ? `<div class="space-y-4">
         <div class="bg-gradient-to-br from-indigo-950/60 to-pink-950/30 rounded-2xl p-3.5 border border-white/10 space-y-1.5 text-xs">
           <div class="flex justify-between text-gray-300">
-            <span>Tổng phần phải đóng:</span>
-            <span class="font-mono">${fmt(totalOwed)}</span>
+            <span>Phần phải đóng (bill chung / người khác):</span>
+            <span class="font-mono">${fmt(memberOwedFromOthers)}</span>
           </div>
           <div class="flex justify-between text-emerald-400">
-            <span>Trừ tiền đã ứng trước:</span>
-            <span class="font-mono">- ${fmt(totalPaid)}</span>
+            <span>Trừ tiền ứng cho thành viên khác:</span>
+            <span class="font-mono">- ${fmt(memberPaidForOthers)}</span>
           </div>
+          ${memberSelfPaid > 0 ? `<div class="flex justify-between text-[11px] text-gray-400 italic pl-2 border-l border-white/15">
+            <span>Đã tự trả phần bản thân trong ${fmt(totalPaid)} bill đã ứng:</span>
+            <span class="font-mono">${fmt(memberSelfPaid)}</span>
+          </div>` : ''}
           ${totalSettled > 0 ? `<div class="flex justify-between text-cyan-300">
             <span>Trừ tiền đã đóng quỹ:</span>
             <span class="font-mono">- ${fmt(totalSettled)}</span>
@@ -1121,12 +1149,16 @@ function renderCards() {
 
         <div class="space-y-3">
           <div class="bg-black/20 rounded-xl p-3 border border-white/5">
-            <h4 class="text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-up mr-1"></i>Đã ứng trước</span><span>${fmt(totalPaid)}</span></h4>
-            <div class="max-h-24 overflow-y-auto pr-1">${paidItems.map(i => row(i.name, i.amount)).join('') || '<p class="text-xs text-gray-500 italic">Chưa ứng khoản nào</p>'}</div>
+            <h4 class="text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-up mr-1"></i>Đã ứng cho thành viên khác</span><span>${fmt(memberPaidForOthers)}</span></h4>
+            <div class="max-h-28 overflow-y-auto pr-1">${paidItems.map(i => {
+              const selfAmt = i.split[m.id] || 0;
+              const othersAmt = Math.max(0, i.amount - selfAmt);
+              return row(i.name, othersAmt, '', `Tổng bill ${fmt(i.amount)} • bản thân dùng ${fmt(selfAmt)}`);
+            }).join('') || '<p class="text-xs text-gray-500 italic">Chưa ứng khoản nào cho người khác</p>'}</div>
           </div>
           <div class="bg-black/20 rounded-xl p-3 border border-white/5">
-            <h4 class="text-xs font-semibold text-pink-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-down mr-1"></i>Các khoản phải đóng</span><span>${fmt(totalOwed)}</span></h4>
-            <div class="max-h-24 overflow-y-auto pr-1">${owedItems.map(i => row(i.name, i.split[m.id])).join('') || '<p class="text-xs text-gray-500 italic">Không có khoản nào</p>'}</div>
+            <h4 class="text-xs font-semibold text-pink-400 mb-2 uppercase tracking-wider flex justify-between"><span><i class="fas fa-arrow-down mr-1"></i>Các khoản phải đóng (từ bill khác)</span><span>${fmt(memberOwedFromOthers)}</span></h4>
+            <div class="max-h-28 overflow-y-auto pr-1">${owedItemsFromOthers.map(i => row(i.name, i.split[m.id])).join('') || '<p class="text-xs text-gray-500 italic">Không có khoản nào</p>'}</div>
           </div>
           ${memberPayments.filter(p => p.status === 'approved').length ? `
           <div class="bg-black/20 rounded-xl p-3 border border-white/5">
@@ -1224,7 +1256,9 @@ function renderDebts() {
     const borderColor = hasOverdue ? 'border-red-500/35' : activeSum > 0 ? 'border-pink-500/25' : 'border-white/10';
 
     const statusSummary = activeSum > 0
-      ? `<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Nợ: ${fmt(activeSum)}</span>`
+      ? (isOpen
+          ? `<span class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Nợ: ${fmt(activeSum)}</span>`
+          : `<span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Đang nợ</span>`)
       : pendingM.length > 0
       ? `<span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">${pendingM.length} chờ duyệt</span>`
       : mDebts.length > 0
